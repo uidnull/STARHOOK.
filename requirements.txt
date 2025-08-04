@@ -4,3 +4,4 @@ pywin32
 bettercam
 colorama
 requests
+flask
