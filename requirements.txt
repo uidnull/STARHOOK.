@@ -1,7 +1,0 @@
-opencv-python
-numpy
-pywin32
-bettercam
-colorama
-requests
-flask
