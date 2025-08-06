@@ -8,7 +8,7 @@ import tempfile
 from multiprocessing import Queue
 from ctypes import windll
 
-# Auto-install required packages if missing
+# Auto-install missing packages
 def install_package(package):
     print(f"Installing {package}...")
     subprocess.check_call([sys.executable, "-m", "pip", "install", package])
@@ -39,7 +39,7 @@ import bettercam
 from colorama import init, Fore, Style
 from pypresence import Presence
 
-# Constants and config
+# Constants and configuration
 CONFIG_FILE = "star.json"
 DISCORD_CLIENT_ID = "1402079582257021009"
 
@@ -64,16 +64,23 @@ COLOR_HSV_MAP = {
 def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
 
+def create_default_config():
+    default_config = {
+        "fov": 5,
+        "keybind_type": "mouse",
+        "keybind": "M5",
+        "color": "YELLOW",
+        "shooting_rate": 10,
+        "fps": 120
+    }
+    with open(CONFIG_FILE, "w", encoding="utf-8") as f:
+        json.dump(default_config, f, indent=4)
+    print(f"Default config created: {CONFIG_FILE}")
+
 def load_config():
     if not os.path.isfile(CONFIG_FILE):
-        return {
-            "fov": 5,
-            "keybind_type": "mouse",
-            "keybind": "M5",
-            "color": "YELLOW",
-            "shooting_rate": 10,
-            "fps": 120
-        }
+        print(f"{CONFIG_FILE} not found. Creating default config...")
+        create_default_config()
     with open(CONFIG_FILE, "r", encoding="utf-8") as f:
         return json.load(f)
 
@@ -87,7 +94,7 @@ def input_int(prompt, min_val, max_val):
             val = int(input(prompt))
             if min_val <= val <= max_val:
                 return val
-            print(f"Enter a value between {min_val} and {max_val}.")
+            print(f"Please enter a value between {min_val} and {max_val}.")
         except ValueError:
             print("Please enter a valid number.")
 
@@ -216,7 +223,7 @@ def edit_config():
 
     fps = input_int("Enter FPS: ", 1, 1000)
 
-    print("\nSave changes? (y/n): ", end="")
+    print("\nDo you want to save the changes? (y/n): ", end="")
     save = input().strip().lower()
     if save == "y":
         new_config = {
@@ -230,22 +237,22 @@ def edit_config():
         save_config(new_config)
         print("Configuration saved.")
     else:
-        print("Changes not saved.")
+        print("Changes were not saved.")
 
 def start_rpc(stop_event):
     rpc = None
     try:
         config = load_config()
-        print("Trying to connect Discord Rich Presence...")
+        print("Trying to connect to Discord Rich Presence...")
         rpc = Presence(DISCORD_CLIENT_ID)
         rpc.connect()
-        print("Connected to Discord.")
+        print("Connected to Discord Rich Presence.")
 
         keybind = config.get("keybind", "N/A")
         fov = config.get("fov", "N/A")
         color = config.get("color", "N/A")
 
-        print("\nRich Presence active. Close program to disconnect.")
+        print("\nRich Presence active. Close the program to disconnect.")
 
         start_time = int(time.time())
 
@@ -261,7 +268,7 @@ def start_rpc(stop_event):
             time.sleep(15)
 
     except Exception as e:
-        print(f"\nRich Presence error: {e}")
+        print(f"\nAn error occurred in Rich Presence!: {e}")
     finally:
         if rpc:
             try:
@@ -275,7 +282,7 @@ def init_colorama():
 
 def main_menu():
     init_colorama()
-    StarBot_thread = None
+    starbot_thread = None
     queue = Queue()
     bypass_stop_event = threading.Event()
     bypass_thread = threading.Thread(target=bypass, args=(queue, bypass_stop_event), daemon=True)
@@ -297,13 +304,13 @@ def main_menu():
             option = input("Choose an option: ").strip()
 
             if option == "1":
-                if StarBot_thread and StarBot_thread.is_alive():
+                if starbot_thread and starbot_thread.is_alive():
                     print(Fore.YELLOW + "STARHOOK is already running." + Style.RESET_ALL)
                     input("\nPress Enter to return to menu...")
                     continue
 
                 config = load_config()
-                StarBot_thread = StarBot(
+                starbot_thread = StarBot(
                     queue,
                     config["keybind_type"],
                     config["keybind"],
@@ -312,12 +319,12 @@ def main_menu():
                     config["shooting_rate"],
                     config["fps"]
                 )
-                StarBot_thread.start()
+                starbot_thread.start()
                 print(Fore.GREEN + "STARHOOK loaded and running." + Style.RESET_ALL)
                 input("\nPress Enter to return to menu...")
 
             elif option == "2":
-                if StarBot_thread and StarBot_thread.is_alive():
+                if starbot_thread and starbot_thread.is_alive():
                     print(Fore.YELLOW + "Stop STARHOOK before editing configuration." + Style.RESET_ALL)
                     input("\nPress Enter to return to menu...")
                     continue
@@ -325,9 +332,9 @@ def main_menu():
                 input("\nPress Enter to return to menu...")
 
             elif option == "3":
-                if StarBot_thread and StarBot_thread.is_alive():
-                    StarBot_thread.stop()
-                    StarBot_thread.join()
+                if starbot_thread and starbot_thread.is_alive():
+                    starbot_thread.stop()
+                    starbot_thread.join()
                     print(Fore.GREEN + "STARHOOK stopped." + Style.RESET_ALL)
                 else:
                     print(Fore.YELLOW + "STARHOOK is not running." + Style.RESET_ALL)
@@ -344,9 +351,9 @@ def main_menu():
     except KeyboardInterrupt:
         print("\nProgram interrupted.")
 
-    if StarBot_thread and StarBot_thread.is_alive():
-        StarBot_thread.stop()
-        StarBot_thread.join()
+    if starbot_thread and starbot_thread.is_alive():
+        starbot_thread.stop()
+        starbot_thread.join()
     bypass_stop_event.set()
     rpc_stop_event.set()
     print("Closing...")
