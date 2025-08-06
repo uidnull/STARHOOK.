@@ -245,20 +245,20 @@ def iniciar_rpc(stop_event):
 
         keybind = config.get("keybind", "N/A")
         fov = config.get("fov", "N/A")
+        color = config.get("color", "N/A")
 
         print("\nRich Presence activo. Cierra el programa para desconectar.")
 
         start_time = int(time.time())
 
         while not stop_event.is_set():
-            details = f"KEY [{keybind}] + FOV [{fov}]"
+            details = f"KEY [{keybind}] + FOV [{fov}] + COLOR [{color}]"
             rpc.update(
                 state="VALORANT",
                 details=details,
                 start=start_time,
                 large_image="1",
                 large_text="StarHook v3",
-                buttons=[{"label": "Discord", "url": "https://discord.gg/EVXfv8VNDP"}],
             )
             time.sleep(15)  # Actualiza cada 15 segundos
 
