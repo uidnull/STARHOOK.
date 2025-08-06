@@ -8,30 +8,7 @@ import tempfile
 from multiprocessing import Queue
 from ctypes import windll
 
-import numpy as np
-import cv2
-import win32api
-import bettercam
-from colorama import init as colorama_init, Fore, Style
-
-# --- Auto-installation check for pypresence ---
-try:
-    from pypresence import Presence
-except ImportError:
-    print("El módulo 'pypresence' no se encontró. Intentando instalarlo...")
-    try:
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "pypresence"])
-        from pypresence import Presence
-        print("Módulo 'pypresence' instalado exitosamente.")
-    except Exception as e:
-        print(f"ERROR: No se pudo instalar 'pypresence' automáticamente. Por favor, instálalo manualmente ejecutando:")
-        print(f"pip install pypresence")
-        print(f"Detalle del error: {e}")
-        input("Presiona Enter para cerrar...")
-        sys.exit(1)  # Exit the script if installation fails
-# --- End of auto-installation check ---
-
-# Otros paquetes requeridos e instalación automática
+# Auto-instalar paquetes necesarios si faltan
 def instalar_paquete(paquete):
     print(f"Instalando {paquete}...")
     subprocess.check_call([sys.executable, "-m", "pip", "install", paquete])
@@ -50,11 +27,20 @@ paquetes_requeridos = {
     "opencv-python": "cv2",
     "pywin32": "win32api",
     "bettercam": "bettercam",
+    "pypresence": "pypresence",
 }
 
 chequear_e_instalar(paquetes_requeridos)
 
-# Constantes
+# Ahora importamos los paquetes instalados
+import numpy as np
+import cv2
+import win32api
+import bettercam
+from colorama import init, Fore, Style
+from pypresence import Presence
+
+# Constantes y configuraciones
 CONFIG_FILE = "config.json"
 DISCORD_CLIENT_ID = "1402079582257021009"
 
@@ -76,12 +62,12 @@ COLOR_HSV_MAP = {
     "MORADO": [[130, 150, 100], [160, 255, 255]],
 }
 
-# Funciones auxiliares
 def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
 
 def cargar_config():
     if not os.path.isfile(CONFIG_FILE):
+        # Valores por defecto si no existe config.json
         return {
             "fov": 5,
             "keybind_type": "raton",
@@ -90,29 +76,8 @@ def cargar_config():
             "shooting_rate": 10,
             "fps": 120
         }
-    try:
-        with open(CONFIG_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except json.JSONDecodeError:
-        print(f"Error: El archivo '{CONFIG_FILE}' no es un JSON válido. Usando valores predeterminados.")
-        return {
-            "fov": 5,
-            "keybind_type": "raton",
-            "keybind": "M5",
-            "color": "AMARILLO",
-            "shooting_rate": 10,
-            "fps": 120
-        }
-    except Exception as e:
-        print(f"Error al cargar '{CONFIG_FILE}': {e}. Usando valores predeterminados.")
-        return {
-            "fov": 5,
-            "keybind_type": "raton",
-            "keybind": "M5",
-            "color": "AMARILLO",
-            "shooting_rate": 10,
-            "fps": 120
-        }
+    with open(CONFIG_FILE, "r", encoding="utf-8") as f:
+        return json.load(f)
 
 def guardar_config(data):
     with open(CONFIG_FILE, "w", encoding="utf-8") as f:
@@ -124,8 +89,7 @@ def input_int(prompt, min_val, max_val):
             val = int(input(prompt))
             if min_val <= val <= max_val:
                 return val
-            else:
-                print(f"Introduce un valor entre {min_val} y {max_val}.")
+            print(f"Introduce un valor entre {min_val} y {max_val}.")
         except ValueError:
             print("Por favor, introduce un número válido.")
 
@@ -135,59 +99,8 @@ def input_choice(prompt, choices):
         val = input(f"{prompt} ({choices_str}): ").strip().upper()
         if val in choices:
             return val
-        else:
-            print("Opción no válida.")
+        print("Opción no válida.")
 
-# Clase Discord RPC
-class DiscordRPC(threading.Thread):
-    def __init__(self):
-        super().__init__(daemon=True)
-        self.rpc = None
-        self.connected = False
-        self.running = True
-
-    def run(self):
-        try:
-            self.rpc = Presence(DISCORD_CLIENT_ID)
-            self.rpc.connect()
-            self.connected = True
-            self.actualizar_estado()
-            # Mantener el hilo vivo para poder actualizar estado o desconectar
-            while self.running:
-                time.sleep(15)  # Actualización periódica opcional
-        except Exception as e:
-            print(f"Error en Discord RPC: {e}")
-            self.connected = False
-
-    def actualizar_estado(self):
-        if not self.connected:
-            return
-        config = cargar_config()
-        keybind = config.get("keybind", "N/A")
-        fov = config.get("fov", "N/A")
-        details = f"KEY [{keybind}] + FOV [{fov}]"
-        try:
-            self.rpc.update(
-                state="VALORANT",
-                details=details,
-                start=int(time.time()),
-                large_image="1",
-                large_text="StarHook v3",
-                buttons=[{"label": "Discord", "url": "https://discord.gg/EVXfv8VNDP"}],
-            )
-        except Exception as e:
-            print(f"Error actualizando estado Discord RPC: {e}")
-
-    def close(self):
-        self.running = False
-        if self.rpc:
-            try:
-                self.rpc.clear()
-                self.rpc.close()
-            except Exception as e:
-                print(f"Error al cerrar conexión Discord RPC: {e}")
-
-# Clase principal StarBot
 class StarBot(threading.Thread):
     def __init__(self, queue, keybind_type, keybind, fov, color, shooting_rate, fps):
         super().__init__()
@@ -260,7 +173,6 @@ class StarBot(threading.Thread):
             except:
                 pass
 
-# Función bypass para escribir archivo de disparo
 def bypass(queue, stop_event):
     trigger_file = os.path.join(tempfile.gettempdir(), "star_8k3jz4n0.txt")
     while not stop_event.is_set():
@@ -275,7 +187,6 @@ def bypass(queue, stop_event):
         except:
             pass
 
-# Función para editar configuración
 def editar_config():
     config = cargar_config()
 
@@ -323,91 +234,125 @@ def editar_config():
     else:
         print("No se guardaron los cambios.")
 
-# Inicialización colorama
-def init():
-    colorama_init(autoreset=True)
+def iniciar_rpc(stop_event):
+    rpc = None
+    try:
+        config = cargar_config()
+        print("Intentando conectar con Discord Rich Presence...")
+        rpc = Presence(DISCORD_CLIENT_ID)
+        rpc.connect()
+        print("Conexión con Discord establecida.")
 
-# Menú principal
+        keybind = config.get("keybind", "N/A")
+        fov = config.get("fov", "N/A")
+
+        print("\nRich Presence activo. Cierra el programa para desconectar.")
+
+        start_time = int(time.time())
+
+        while not stop_event.is_set():
+            details = f"KEY [{keybind}] + FOV [{fov}]"
+            rpc.update(
+                state="VALORANT",
+                details=details,
+                start=start_time,
+                large_image="1",
+                large_text="StarHook v3",
+                buttons=[{"label": "Discord", "url": "https://discord.gg/EVXfv8VNDP"}],
+            )
+            time.sleep(15)  # Actualiza cada 15 segundos
+
+    except Exception as e:
+        print(f"\n¡Ha ocurrido un error en Rich Presence!: {e}")
+    finally:
+        if rpc:
+            try:
+                rpc.close()
+                print("Conexión Rich Presence cerrada.")
+            except Exception as e:
+                print(f"Error cerrando Rich Presence: {e}")
+
+def init_colorama():
+    init(autoreset=True)
+
 def main_menu():
-    init()
+    init_colorama()
     StarBot_thread = None
     queue = Queue()
     bypass_stop_event = threading.Event()
     bypass_thread = threading.Thread(target=bypass, args=(queue, bypass_stop_event), daemon=True)
     bypass_thread.start()
 
-    # Iniciar RPC Discord en hilo aparte
-    discord_rpc = DiscordRPC()
-    discord_rpc.start()
+    rpc_stop_event = threading.Event()
+    rpc_thread = threading.Thread(target=iniciar_rpc, args=(rpc_stop_event,), daemon=True)
+    rpc_thread.start()
 
-    while True:
-        clear_screen()
+    try:
+        while True:
+            clear_screen()
+            print("\n⭐ STARHOOK v3 by @uidnull.\n")
+            print("1 LOAD STARHOOK")
+            print("2 EDITAR CONFIG")
+            print("3 STOP STARHOOK")
+            print("4 SALIR\n")
 
-        print("\n⭐ STARHOOK v3 by @uidnull.\n")
-        print("1 LOAD STARHOOK")
-        print("2 EDITAR CONFIG")
-        print("3 STOP STARHOOK")
-        print("4 SALIR\n")
+            option = input("Elige una opción: ").strip()
 
-        option = input("Elige una opción: ").strip()
+            if option == "1":
+                if StarBot_thread and StarBot_thread.is_alive():
+                    print(Fore.YELLOW + "STARHOOK ya se está ejecutando." + Style.RESET_ALL)
+                    input("\nPresiona Enter para volver al menú...")
+                    continue
 
-        if option == "1":
-            if StarBot_thread and StarBot_thread.is_alive():
-                print(Fore.YELLOW + "STARHOOK ya se está ejecutando." + Style.RESET_ALL)
+                config = cargar_config()
+                StarBot_thread = StarBot(
+                    queue,
+                    config["keybind_type"],
+                    config["keybind"],
+                    config["fov"],
+                    config["color"],
+                    config["shooting_rate"],
+                    config["fps"]
+                )
+                StarBot_thread.start()
+                print(Fore.GREEN + "STARHOOK cargado y ejecutándose." + Style.RESET_ALL)
                 input("\nPresiona Enter para volver al menú...")
-                continue
 
-            config = cargar_config()
-            StarBot_thread = StarBot(
-                queue,
-                config["keybind_type"],
-                config["keybind"],
-                config["fov"],
-                config["color"],
-                config["shooting_rate"],
-                config["fps"]
-            )
-            StarBot_thread.start()
-            # Actualizar estado Discord con nueva configuración
-            discord_rpc.actualizar_estado()
-            print(Fore.GREEN + "STARHOOK cargado y ejecutándose." + Style.RESET_ALL)
-            input("\nPresiona Enter para volver al menú...")
-
-        elif option == "2":
-            if StarBot_thread and StarBot_thread.is_alive():
-                print(Fore.YELLOW + "Primero detén STARHOOK para editar la configuración." + Style.RESET_ALL)
-                input("\nPresiona Enter para volver al menú...")
-            else:
+            elif option == "2":
+                if StarBot_thread and StarBot_thread.is_alive():
+                    print(Fore.YELLOW + "Detén STARHOOK antes de editar la configuración." + Style.RESET_ALL)
+                    input("\nPresiona Enter para volver al menú...")
+                    continue
                 editar_config()
-                # Actualizar estado Discord tras editar config
-                discord_rpc.actualizar_estado()
                 input("\nPresiona Enter para volver al menú...")
 
-        elif option == "3":
-            if StarBot_thread and StarBot_thread.is_alive():
-                print("Deteniendo STARHOOK...")
-                StarBot_thread.stop()
-                StarBot_thread.join()
-                StarBot_thread = None
-                print(Fore.RED + "STARHOOK detenido." + Style.RESET_ALL)
+            elif option == "3":
+                if StarBot_thread and StarBot_thread.is_alive():
+                    StarBot_thread.stop()
+                    StarBot_thread.join()
+                    print(Fore.GREEN + "STARHOOK detenido." + Style.RESET_ALL)
+                else:
+                    print(Fore.YELLOW + "STARHOOK no está ejecutándose." + Style.RESET_ALL)
                 input("\nPresiona Enter para volver al menú...")
+
+            elif option == "4":
+                print("Saliendo...")
+                break
+
             else:
-                print(Fore.YELLOW + "STARHOOK no se está ejecutando." + Style.RESET_ALL)
+                print(Fore.RED + "Opción no válida." + Style.RESET_ALL)
                 input("\nPresiona Enter para volver al menú...")
 
-        elif option == "4":
-            print("Saliendo...")
-            if StarBot_thread and StarBot_thread.is_alive():
-                StarBot_thread.stop()
-                StarBot_thread.join()
-            bypass_stop_event.set()
-            bypass_thread.join()
-            discord_rpc.close()
-            break
+    except KeyboardInterrupt:
+        print("\nInterrupción del programa.")
 
-        else:
-            print("Opción no válida.")
-            input("\nPresiona Enter para volver al menú...")
+    # Limpieza antes de salir
+    if StarBot_thread and StarBot_thread.is_alive():
+        StarBot_thread.stop()
+        StarBot_thread.join()
+    bypass_stop_event.set()
+    rpc_stop_event.set()
+    print("Cerrando...")
 
 if __name__ == "__main__":
     main_menu()
