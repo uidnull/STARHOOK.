@@ -252,9 +252,9 @@ def iniciar_rpc(stop_event):
         start_time = int(time.time())
 
         while not stop_event.is_set():
-            details = f"KEY [{keybind}] + FOV [{fov}] + COLOR [{color}]"
+            details = f"Key [{keybind}] | Fov [{fov}] | Color [{color}]"
             rpc.update(
-                state="VALORANT",
+                state="by @uidnull.",
                 details=details,
                 start=start_time,
                 large_image="1",
