@@ -1,14 +1,9 @@
-##1360276491457922376189
-##4920288647699760539556
-##9316273982896818412529
-##2197126032733305545493
-##3503819429555534003883
-import subprocess
+import os
 import sys
 import json
-import os
 import time
 import threading
+import subprocess
 import tempfile
 from multiprocessing import Queue
 from ctypes import windll
@@ -17,12 +12,26 @@ import numpy as np
 import cv2
 import win32api
 import bettercam
-from colorama import init, Fore, Back, Style
+from colorama import init as colorama_init, Fore, Style
 
-def clear_screen():
-    os.system('cls' if os.name == 'nt' else 'clear')
+# --- Auto-installation check for pypresence ---
+try:
+    from pypresence import Presence
+except ImportError:
+    print("El módulo 'pypresence' no se encontró. Intentando instalarlo...")
+    try:
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "pypresence"])
+        from pypresence import Presence
+        print("Módulo 'pypresence' instalado exitosamente.")
+    except Exception as e:
+        print(f"ERROR: No se pudo instalar 'pypresence' automáticamente. Por favor, instálalo manualmente ejecutando:")
+        print(f"pip install pypresence")
+        print(f"Detalle del error: {e}")
+        input("Presiona Enter para cerrar...")
+        sys.exit(1)  # Exit the script if installation fails
+# --- End of auto-installation check ---
 
-
+# Otros paquetes requeridos e instalación automática
 def instalar_paquete(paquete):
     print(f"Instalando {paquete}...")
     subprocess.check_call([sys.executable, "-m", "pip", "install", paquete])
@@ -45,8 +54,9 @@ paquetes_requeridos = {
 
 chequear_e_instalar(paquetes_requeridos)
 
-
+# Constantes
 CONFIG_FILE = "config.json"
+DISCORD_CLIENT_ID = "1402079582257021009"
 
 KEY_MAP = {
     "ALT": 0x12,
@@ -66,6 +76,9 @@ COLOR_HSV_MAP = {
     "MORADO": [[130, 150, 100], [160, 255, 255]],
 }
 
+# Funciones auxiliares
+def clear_screen():
+    os.system('cls' if os.name == 'nt' else 'clear')
 
 def cargar_config():
     if not os.path.isfile(CONFIG_FILE):
@@ -77,11 +90,32 @@ def cargar_config():
             "shooting_rate": 10,
             "fps": 120
         }
-    with open(CONFIG_FILE, "r") as f:
-        return json.load(f)
+    try:
+        with open(CONFIG_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except json.JSONDecodeError:
+        print(f"Error: El archivo '{CONFIG_FILE}' no es un JSON válido. Usando valores predeterminados.")
+        return {
+            "fov": 5,
+            "keybind_type": "raton",
+            "keybind": "M5",
+            "color": "AMARILLO",
+            "shooting_rate": 10,
+            "fps": 120
+        }
+    except Exception as e:
+        print(f"Error al cargar '{CONFIG_FILE}': {e}. Usando valores predeterminados.")
+        return {
+            "fov": 5,
+            "keybind_type": "raton",
+            "keybind": "M5",
+            "color": "AMARILLO",
+            "shooting_rate": 10,
+            "fps": 120
+        }
 
 def guardar_config(data):
-    with open(CONFIG_FILE, "w") as f:
+    with open(CONFIG_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=4)
 
 def input_int(prompt, min_val, max_val):
@@ -104,7 +138,56 @@ def input_choice(prompt, choices):
         else:
             print("Opción no válida.")
 
+# Clase Discord RPC
+class DiscordRPC(threading.Thread):
+    def __init__(self):
+        super().__init__(daemon=True)
+        self.rpc = None
+        self.connected = False
+        self.running = True
 
+    def run(self):
+        try:
+            self.rpc = Presence(DISCORD_CLIENT_ID)
+            self.rpc.connect()
+            self.connected = True
+            self.actualizar_estado()
+            # Mantener el hilo vivo para poder actualizar estado o desconectar
+            while self.running:
+                time.sleep(15)  # Actualización periódica opcional
+        except Exception as e:
+            print(f"Error en Discord RPC: {e}")
+            self.connected = False
+
+    def actualizar_estado(self):
+        if not self.connected:
+            return
+        config = cargar_config()
+        keybind = config.get("keybind", "N/A")
+        fov = config.get("fov", "N/A")
+        details = f"KEY [{keybind}] + FOV [{fov}]"
+        try:
+            self.rpc.update(
+                state="VALORANT",
+                details=details,
+                start=int(time.time()),
+                large_image="1",
+                large_text="StarHook v3",
+                buttons=[{"label": "Discord", "url": "https://discord.gg/EVXfv8VNDP"}],
+            )
+        except Exception as e:
+            print(f"Error actualizando estado Discord RPC: {e}")
+
+    def close(self):
+        self.running = False
+        if self.rpc:
+            try:
+                self.rpc.clear()
+                self.rpc.close()
+            except Exception as e:
+                print(f"Error al cerrar conexión Discord RPC: {e}")
+
+# Clase principal StarBot
 class StarBot(threading.Thread):
     def __init__(self, queue, keybind_type, keybind, fov, color, shooting_rate, fps):
         super().__init__()
@@ -177,7 +260,7 @@ class StarBot(threading.Thread):
             except:
                 pass
 
-
+# Función bypass para escribir archivo de disparo
 def bypass(queue, stop_event):
     trigger_file = os.path.join(tempfile.gettempdir(), "star_8k3jz4n0.txt")
     while not stop_event.is_set():
@@ -192,7 +275,7 @@ def bypass(queue, stop_event):
         except:
             pass
 
-
+# Función para editar configuración
 def editar_config():
     config = cargar_config()
 
@@ -240,12 +323,11 @@ def editar_config():
     else:
         print("No se guardaron los cambios.")
 
-
+# Inicialización colorama
 def init():
-    from colorama import init as colorama_init
     colorama_init(autoreset=True)
 
-
+# Menú principal
 def main_menu():
     init()
     StarBot_thread = None
@@ -253,6 +335,10 @@ def main_menu():
     bypass_stop_event = threading.Event()
     bypass_thread = threading.Thread(target=bypass, args=(queue, bypass_stop_event), daemon=True)
     bypass_thread.start()
+
+    # Iniciar RPC Discord en hilo aparte
+    discord_rpc = DiscordRPC()
+    discord_rpc.start()
 
     while True:
         clear_screen()
@@ -282,6 +368,8 @@ def main_menu():
                 config["fps"]
             )
             StarBot_thread.start()
+            # Actualizar estado Discord con nueva configuración
+            discord_rpc.actualizar_estado()
             print(Fore.GREEN + "STARHOOK cargado y ejecutándose." + Style.RESET_ALL)
             input("\nPresiona Enter para volver al menú...")
 
@@ -291,6 +379,8 @@ def main_menu():
                 input("\nPresiona Enter para volver al menú...")
             else:
                 editar_config()
+                # Actualizar estado Discord tras editar config
+                discord_rpc.actualizar_estado()
                 input("\nPresiona Enter para volver al menú...")
 
         elif option == "3":
@@ -312,6 +402,7 @@ def main_menu():
                 StarBot_thread.join()
             bypass_stop_event.set()
             bypass_thread.join()
+            discord_rpc.close()
             break
 
         else:
@@ -320,8 +411,3 @@ def main_menu():
 
 if __name__ == "__main__":
     main_menu()
-##7751050796369267317802
-##8575556040342184108476
-##8916264190292508457033
-##3707139616610109917920
-##2183885071417203326979
