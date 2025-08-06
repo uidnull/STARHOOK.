@@ -32,7 +32,6 @@ paquetes_requeridos = {
 
 chequear_e_instalar(paquetes_requeridos)
 
-# Ahora importamos los paquetes instalados
 import numpy as np
 import cv2
 import win32api
@@ -41,7 +40,7 @@ from colorama import init, Fore, Style
 from pypresence import Presence
 
 # Constantes y configuraciones
-CONFIG_FILE = "config.json"
+CONFIG_FILE = "estrella.json"
 DISCORD_CLIENT_ID = "1402079582257021009"
 
 KEY_MAP = {
@@ -67,7 +66,6 @@ def clear_screen():
 
 def cargar_config():
     if not os.path.isfile(CONFIG_FILE):
-        # Valores por defecto si no existe config.json
         return {
             "fov": 5,
             "keybind_type": "raton",
@@ -260,7 +258,7 @@ def iniciar_rpc(stop_event):
                 large_image="1",
                 large_text="StarHook v3",
             )
-            time.sleep(15)  # Actualiza cada 15 segundos
+            time.sleep(15)
 
     except Exception as e:
         print(f"\n¡Ha ocurrido un error en Rich Presence!: {e}")
@@ -291,9 +289,9 @@ def main_menu():
         while True:
             clear_screen()
             print("\n⭐ STARHOOK v3 by @uidnull.\n")
-            print("1 LOAD STARHOOK")
-            print("2 EDITAR CONFIG")
-            print("3 STOP STARHOOK")
+            print("1 CARGAR STARHOOK")
+            print("2 EDITAR CONFIGURACIÓN")
+            print("3 DETENER STARHOOK")
             print("4 SALIR\n")
 
             option = input("Elige una opción: ").strip()
@@ -346,7 +344,6 @@ def main_menu():
     except KeyboardInterrupt:
         print("\nInterrupción del programa.")
 
-    # Limpieza antes de salir
     if StarBot_thread and StarBot_thread.is_alive():
         StarBot_thread.stop()
         StarBot_thread.join()
