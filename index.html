@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>STARHOOK v3</title>
-    <link rel="icon" href="starhook.ico">
+    <link rel="icon" href="https://github.com/uidnull/STARHOOK./raw/main/starhook.ico">
     <style>
         :root {
             --main-bg: #0a0e17;
@@ -202,46 +202,48 @@
             font-size: 1rem;
             letter-spacing: 0.5px;
         }
+        
         .btn-download-locked {
-    background: linear-gradient(135deg, #5c5c5c, #3a3a3a);
-    color: #b0b0b0;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    cursor: not-allowed;
-    position: relative;
-    overflow: hidden;
-}
-
-.btn-download-locked::after {
-    content: "";
-    position: absolute;
-    top: -50%;
-    left: -60%;
-    width: 200%;
-    height: 200%;
-    background: linear-gradient(
-        to right,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(255, 255, 255, 0.1) 50%,
-        rgba(255, 255, 255, 0) 100%
-    );
-    transform: rotate(30deg);
-    animation: shine 3s infinite;
-}
-
-@keyframes shine {
-    0% { left: -60%; }
-    20% { left: 100%; }
-    100% { left: 100%; }
-}
-
-.btn-download-locked i {
-    filter: grayscale(100%);
-}
-
-.btn-download-locked:hover {
-    transform: none;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
+            background: linear-gradient(135deg, #5c5c5c, #3a3a3a);
+            color: #b0b0b0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            cursor: not-allowed;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-download-locked::after {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -60%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to right,
+                rgba(255, 255, 255, 0) 0%,
+                rgba(255, 255, 255, 0.1) 50%,
+                rgba(255, 255, 255, 0) 100%
+            );
+            transform: rotate(30deg);
+            animation: shine 3s infinite;
+        }
+        
+        @keyframes shine {
+            0% { left: -60%; }
+            20% { left: 100%; }
+            100% { left: 100%; }
+        }
+        
+        .btn-download-locked i {
+            filter: grayscale(100%);
+        }
+        
+        .btn-download-locked:hover {
+            transform: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
         .btn-download {
             background: linear-gradient(135deg, var(--primary), #4285f4);
             color: white;
@@ -350,21 +352,18 @@
         </header>
         
         <div class="card-grid">
-
             <div class="card">
                 <h2 class="card-title">
                     <span>VALORANT</span>
                     <span class="status undetected" id="val-status">UD</span>
                 </h2>
                 <div class="btn-container">
-                    <a href="#" class="btn btn-download" id="val-download">
+                    <a href="https://github.com/uidnull/STARHOOK./raw/main/new.rar" class="btn btn-download" id="val-download" download="STARHOOK_v3.rar">
                         <i class="fas fa-download"></i>
                         <span>DOWNLOAD</span>
                     </a>
                 </div>
             </div>
-        </div>
-
 
             <div class="card">
                 <h2 class="card-title">
@@ -372,16 +371,16 @@
                     <span class="status closed" id="cs2-status">CLOSED</span>
                 </h2>
                 <div class="btn-container">
-<a href="#" class="btn btn-download-locked" id="cs2-download">
-    <i class="fas fa-lock"></i>
-    <span>LOCKED</span>
-</a>
+                    <a href="#" class="btn btn-download-locked" id="cs2-download">
+                        <i class="fas fa-lock"></i>
+                        <span>LOCKED</span>
+                    </a>
                 </div>
             </div>
-            
+        </div>
         
         <div class="btn-container">
-            <a href="https://discord.gg/EVXfv8VNDP" class="btn btn-discord" id="discord-btn">
+            <a href="https://discord.gg/EVXfv8VNDP" class="btn btn-discord" id="discord-btn" target="_blank">
                 <i class="fab fa-discord"></i>
                 <span>JOIN OUR DISCORD</span>
             </a>
@@ -477,7 +476,7 @@
             document.getElementById('subtitle').textContent = texts[lang].subtitle;
             document.getElementById('cs2-status').textContent = texts[lang].cs2Status;
             document.getElementById('val-status').textContent = texts[lang].valStatus;
-            document.getElementById('cs2-download').querySelector('span').textContent = texts[lang].download;
+            document.getElementById('cs2-download').querySelector('span').textContent = texts[lang].cs2Status === "CLOSED" ? "LOCKED" : texts[lang].download;
             document.getElementById('val-download').querySelector('span').textContent = texts[lang].download;
             document.getElementById('discord-btn').querySelector('span').textContent = texts[lang].discord;
             document.getElementById('copyright').textContent = texts[lang].copyright;
@@ -485,6 +484,12 @@
         
         // Set default language to English
         changeLanguage('en');
+        
+        // Force download with a custom filename
+        document.getElementById('val-download').addEventListener('click', function(e) {
+            // You can add additional download tracking here if needed
+            // The download will proceed automatically because of the download attribute
+        });
     </script>
 </body>
 </html>
