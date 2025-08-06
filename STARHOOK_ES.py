@@ -64,16 +64,23 @@ COLOR_HSV_MAP = {
 def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
 
+def crear_config_por_defecto():
+    config_por_defecto = {
+        "fov": 5,
+        "keybind_type": "raton",
+        "keybind": "M5",
+        "color": "AMARILLO",
+        "shooting_rate": 10,
+        "fps": 120
+    }
+    with open(CONFIG_FILE, "w", encoding="utf-8") as f:
+        json.dump(config_por_defecto, f, indent=4)
+    print(f"Configuración por defecto creada: {CONFIG_FILE}")
+
 def cargar_config():
     if not os.path.isfile(CONFIG_FILE):
-        return {
-            "fov": 5,
-            "keybind_type": "raton",
-            "keybind": "M5",
-            "color": "AMARILLO",
-            "shooting_rate": 10,
-            "fps": 120
-        }
+        print(f"No se encontró {CONFIG_FILE}. Creando configuración por defecto...")
+        crear_config_por_defecto()
     with open(CONFIG_FILE, "r", encoding="utf-8") as f:
         return json.load(f)
 
