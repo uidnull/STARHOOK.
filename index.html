@@ -1,235 +1,196 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>STARHOOK LOADER</title>
-<link rel="icon" href="https://github.com/uidnull/STARHOOK./raw/main/starhook.ico" />
-<style>
-  :root {
-    --main-bg: #0a0e17;
-    --primary: #1a73e8;
-    --secondary: #34a853;
-    --accent: #fbbc05;
-    --error: #ea4335;
-    --text: #e8eaed;
-    --card-bg: rgba(15, 25, 45, 0.8);
-    --card-border: rgba(100, 150, 255, 0.3);
-  }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>STARHOOK LOADER</title>
+    <link rel="icon" href="https://github.com/uidnull/STARHOOK./raw/main/starhook.ico" />
+    <style>
+        :root {
+            --bg-dark: #121212;
+            --bg-input: #1f1f1f;
+            --text-light: #ddd;
+            --text-muted: #999;
+            --accent-blue: #4a90e2;
+            --border-input: #333;
+            --btn-bg: #2a2a2a;
+            --btn-hover: #4a90e2;
+            --error-color: #e74c3c;
+            --success-color: #27ae60;
+        }
 
-  body {
-    margin: 0; padding: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: var(--main-bg);
-    color: var(--text);
-    overflow-x: hidden;
-    background-image: 
-      radial-gradient(circle at 25% 25%, rgba(26, 115, 232, 0.15) 0%, transparent 50%),
-      radial-gradient(circle at 75% 75%, rgba(52, 168, 83, 0.15) 0%, transparent 50%);
-    position: relative;
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
+        * {
+            box-sizing: border-box;
+        }
 
-  #loader-page, #login-page {
-    max-width: 400px;
-    width: 90%;
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 12px;
-    padding: 2rem;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(10px);
-    text-align: center;
-  }
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            user-select: none;
+        }
 
-  #loader-page {
-    display: none;
-  }
+        .loader-container {
+            background: var(--bg-dark);
+            padding: 2.5rem 3rem;
+            border-radius: 12px;
+            box-shadow: 0 0 25px rgba(74, 144, 226, 0.25);
+            text-align: center;
+            width: 320px;
+        }
 
-  h1 {
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    font-weight: 800;
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
-  }
+        .loader-container img {
+            width: 80px;
+            margin-bottom: 1.5rem;
+            user-select: none;
+        }
 
-  label {
-    display: block;
-    text-align: left;
-    margin-bottom: 0.4rem;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-  }
+        h1 {
+            margin: 0 0 1rem 0;
+            font-weight: 700;
+            letter-spacing: 1.2px;
+            font-size: 1.7rem;
+        }
 
-  input[type="text"] {
-    width: 100%;
-    padding: 0.6rem 1rem;
-    font-size: 1rem;
-    border-radius: 8px;
-    border: 1px solid var(--card-border);
-    background: rgba(232,234,237,0.1);
-    color: var(--text);
-    margin-bottom: 1rem;
-  }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.3rem;
+        }
 
-  input[type="text"]:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 8px var(--primary);
-  }
+        input[type="text"] {
+            background-color: var(--bg-input);
+            border: 1.5px solid var(--border-input);
+            border-radius: 8px;
+            padding: 12px 15px;
+            font-size: 1rem;
+            color: var(--text-light);
+            outline-offset: 2px;
+            transition: border-color 0.3s ease;
+        }
+        input[type="text"]::placeholder {
+            color: var(--text-muted);
+        }
+        input[type="text"]:focus {
+            border-color: var(--accent-blue);
+            outline: none;
+            box-shadow: 0 0 6px var(--accent-blue);
+        }
 
-  button {
-    cursor: pointer;
-    background: linear-gradient(135deg, var(--primary), #4285f4);
-    color: white;
-    font-weight: 600;
-    font-size: 1rem;
-    border: none;
-    border-radius: 8px;
-    padding: 0.8rem 1.8rem;
-    box-shadow: 0 4px 15px rgba(26, 115, 232, 0.3);
-    transition: all 0.3s;
-  }
+        button {
+            background-color: var(--btn-bg);
+            border: none;
+            border-radius: 8px;
+            padding: 12px 0;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            user-select: none;
+        }
+        button:disabled {
+            cursor: not-allowed;
+            opacity: 0.45;
+            background-color: var(--border-input);
+        }
+        button:not(:disabled):hover {
+            background-color: var(--btn-hover);
+            box-shadow: 0 0 15px var(--btn-hover);
+        }
 
-  button:disabled {
-    background: #555;
-    cursor: not-allowed;
-    box-shadow: none;
-  }
-
-  button:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(26, 115, 232, 0.4);
-  }
-
-  .error-msg {
-    color: var(--error);
-    font-weight: bold;
-    margin-bottom: 1rem;
-  }
-
-  a.download-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, var(--primary), #4285f4);
-    color: white;
-    font-weight: 600;
-    font-size: 1.2rem;
-    border-radius: 8px;
-    padding: 1rem 2rem;
-    text-decoration: none;
-    box-shadow: 0 4px 15px rgba(26, 115, 232, 0.3);
-    transition: all 0.3s;
-  }
-
-  a.download-btn i {
-    margin-right: 10px;
-    font-size: 1.5rem;
-  }
-
-  a.download-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(26, 115, 232, 0.5);
-  }
-
-  /* Loader icon */
-  @keyframes spin {
-    0% {transform: rotate(0deg);}
-    100% {transform: rotate(360deg);}
-  }
-
-  .loader-icon {
-    border: 4px solid rgba(255,255,255,0.2);
-    border-top: 4px solid var(--primary);
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 1rem auto;
-  }
-</style>
+        .message {
+            font-size: 0.9rem;
+            min-height: 1.3rem;
+            margin-top: -0.5rem;
+            letter-spacing: 0.02em;
+            user-select: none;
+        }
+        .message.error {
+            color: var(--error-color);
+        }
+        .message.success {
+            color: var(--success-color);
+        }
+    </style>
 </head>
 <body>
+    <main class="loader-container" role="main" aria-labelledby="main-title">
+        <img src="cb18b4f7-7989-4cf9-84d9-e6f5596b2f2a.png" alt="Icono STARHOOK" draggable="false" />
+        <h1 id="main-title">STARHOOK</h1>
+        <form id="form" autocomplete="off" novalidate>
+            <input
+                id="keyInput"
+                type="text"
+                name="keyInput"
+                placeholder="Ingresa tu key"
+                aria-label="Ingresa tu key"
+                aria-required="true"
+                autocomplete="off"
+            />
+            <button type="submit" id="downloadBtn" disabled>Login</button>
+            <div id="msgArea" class="message" aria-live="polite" aria-atomic="true"></div>
+        </form>
+    </main>
 
-<div id="login-page">
-  <h1>STARHOOK LOADER</h1>
-  <label for="key-input">Ingresa tu key</label>
-  <input type="text" id="key-input" placeholder="STAR_..." autocomplete="off" />
-  <div class="error-msg" id="error-msg"></div>
-  <button id="btn-login" disabled>Login</button>
-</div>
+    <script>
+        const keyInput = document.getElementById('keyInput');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const msgArea = document.getElementById('msgArea');
+        const form = document.getElementById('form');
 
-<div id="loader-page">
-  <h1>STARHOOK</h1>
-  <a href="https://github.com/uidnull/STARHOOK./raw/main/new.rar" download="STARHOOK_v3.rar" class="download-btn">
-    <i class="fas fa-download"></i> Descargar Loader
-  </a>
-</div>
+        let validKeys = [];
 
-<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-<script>
-  const validKeysURL = 'https://raw.githubusercontent.com/uidnull/STARHOOK./refs/heads/main/assets/LOADER/KEYS/valid.json';
+        async function fetchValidKeys() {
+            try {
+                const res = await fetch('https://raw.githubusercontent.com/uidnull/STARHOOK./refs/heads/main/assets/LOADER/KEYS/valid.json', {cache: 'no-store'});
+                if (!res.ok) throw new Error('No se pudo cargar las keys');
+                const data = await res.json();
+                validKeys = data.valid_keys || [];
+            } catch (err) {
+                msgArea.textContent = 'Error cargando keys, intenta más tarde.';
+                msgArea.className = 'message error';
+                downloadBtn.disabled = true;
+                console.error(err);
+            }
+        }
 
-  const keyInput = document.getElementById('key-input');
-  const btnLogin = document.getElementById('btn-login');
-  const errorMsg = document.getElementById('error-msg');
-  const loginPage = document.getElementById('login-page');
-  const loaderPage = document.getElementById('loader-page');
+        function validateKey() {
+            const key = keyInput.value.trim();
+            if (validKeys.includes(key)) {
+                msgArea.textContent = 'Key válida. Puedes iniciar sesión.';
+                msgArea.className = 'message success';
+                downloadBtn.disabled = false;
+            } else {
+                msgArea.textContent = 'Key inválida. Intenta de nuevo.';
+                msgArea.className = 'message error';
+                downloadBtn.disabled = true;
+            }
+        }
 
-  let validKeys = [];
+        keyInput.addEventListener('input', () => {
+            if (validKeys.length === 0) {
+                msgArea.textContent = 'Cargando keys...';
+                msgArea.className = 'message';
+                downloadBtn.disabled = true;
+                return;
+            }
+            validateKey();
+        });
 
-  // Carga las keys válidas desde el JSON remoto
-  async function fetchValidKeys() {
-    try {
-      const res = await fetch(validKeysURL);
-      if (!res.ok) throw new Error('No se pudo cargar la lista de keys');
-      const data = await res.json();
-      validKeys = data.valid_keys || [];
-    } catch (err) {
-      errorMsg.textContent = 'Error cargando keys. Intenta recargar la página.';
-      btnLogin.disabled = true;
-    }
-  }
+        form.addEventListener('submit', e => {
+            e.preventDefault();
+            if (downloadBtn.disabled) return;
+            // Redirigir a la descarga del loader
+            window.location.href = 'https://www.mediafire.com/file/ut1euo3zk0gnr1h/loader.exe/file';
+        });
 
-  // Validar key en tiempo real
-  function validateKey(key) {
-    if (validKeys.includes(key.trim())) {
-      errorMsg.textContent = '';
-      btnLogin.disabled = false;
-    } else {
-      errorMsg.textContent = 'Key inválida';
-      btnLogin.disabled = true;
-    }
-  }
-
-  keyInput.addEventListener('input', () => {
-    const value = keyInput.value;
-    if (value.length === 0) {
-      errorMsg.textContent = '';
-      btnLogin.disabled = true;
-      return;
-    }
-    validateKey(value);
-  });
-
-  btnLogin.addEventListener('click', () => {
-    // Al hacer login, si la key es válida mostramos la página loader
-    if (!btnLogin.disabled) {
-      loginPage.style.display = 'none';
-      loaderPage.style.display = 'block';
-    }
-  });
-
-  // Inicialización
-  fetchValidKeys();
-</script>
-
+        fetchValidKeys();
+    </script>
 </body>
 </html>
