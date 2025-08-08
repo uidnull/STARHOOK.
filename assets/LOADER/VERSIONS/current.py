@@ -1,4 +1,4 @@
-import sys 
+import sys
 import threading
 import urllib.request
 import json
@@ -15,6 +15,10 @@ from PyQt6.QtCore import Qt
 KEYS_URL = "https://raw.githubusercontent.com/uidnull/STARHOOK./main/assets/LOADER/KEYS/valid.json"
 LOGO_URL = "https://raw.githubusercontent.com/uidnull/STARHOOK./main/starhook.png"
 
+# URLs de versionado
+CURRENT_VERSION_URL = "https://raw.githubusercontent.com/uidnull/STARHOOK./refs/heads/main/assets/LOADER/VERSIONS/current.py"
+UPDATE_VERSION_URL = "https://raw.githubusercontent.com/uidnull/STARHOOK./refs/heads/main/assets/LOADER/VERSIONS/update.py"
+
 # Juegos y scripts asociados
 GAMES = [
     {
@@ -30,6 +34,21 @@ GAMES = [
         "script_url": "https://raw.githubusercontent.com/uidnull/STARHOOK./refs/heads/main/assets/languages/spanish/thefinals_es.py"
     }
 ]
+
+def check_version():
+    try:
+        current_code = urllib.request.urlopen(CURRENT_VERSION_URL).read()
+        update_code = urllib.request.urlopen(UPDATE_VERSION_URL).read()
+        if current_code != update_code:
+            # Mostrar alerta y cerrar la app
+            app = QApplication(sys.argv)
+            QMessageBox.critical(None, "Actualización requerida", "ACTUALIZA EL LOADER")
+            sys.exit(0)
+    except Exception as e:
+        # Si falla la verificación, también cerramos o mostramos error
+        app = QApplication(sys.argv)
+        QMessageBox.critical(None, "Error", f"No se pudo verificar la versión:\n{e}")
+        sys.exit(1)
 
 class MainWindow(QWidget):
     def __init__(self):
@@ -178,6 +197,7 @@ class MainWindow(QWidget):
             print(f"Error al ejecutar como admin. Código: {ret}")
 
 if __name__ == "__main__":
+    check_version()  # <-- verificamos versión antes de iniciar la app
     app = QApplication(sys.argv)
     window = MainWindow()
     window.show()
