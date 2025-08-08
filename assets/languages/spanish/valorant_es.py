@@ -41,7 +41,7 @@ import bettercam
 from colorama import init, Fore, Style
 from pypresence import Presence
 
-CONFIG_FILE = "estrella.json"
+CONFIG_FILE = "val_es.json"
 DISCORD_CLIENT_ID = "1402079582257021009"
 
 KEY_MAP = {
@@ -262,8 +262,8 @@ def iniciar_rpc(stop_event):
                 state="by @uidnull.",
                 details=details,
                 start=start_time,
-                large_image="1",
-                large_text="StarHook v3",
+                large_image="v_s",
+                large_text="StarHook v4",
             )
             time.sleep(15)
 
@@ -295,7 +295,7 @@ def main_menu():
     try:
         while True:
             clear_screen()
-            print("\n⭐ STARHOOK v3 by @uidnull.\n")
+            print("\n★ STARHOOK v4\n")
             print("1 CARGAR STARHOOK")
             print("2 EDITAR CONFIGURACIÓN")
             print("3 DETENER STARHOOK")
