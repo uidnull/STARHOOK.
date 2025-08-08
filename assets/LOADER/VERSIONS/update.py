@@ -52,7 +52,7 @@ def check_version():
         print(f"Current file: length={len_current}, md5={h_current}")
         print(f"Update file:  length={len_update}, md5={h_update}")
         if h_current != h_update:
-            QMessageBox.critical(None, "Actualización requerida", "ACTUALIZA EL LOADER")
+            QMessageBox.critical(None, "ERROR", "ACTUALIZA EL LOADER")
             sys.exit(0)
     except Exception as e:
         QMessageBox.critical(None, "Error", f"No se pudo verificar la versión:\n{e}")
