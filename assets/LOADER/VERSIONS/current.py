@@ -4,11 +4,13 @@ import urllib.request
 import json
 import tempfile
 import ctypes
+import hashlib
+import os
 from PyQt6.QtWidgets import (
     QApplication, QWidget, QLabel, QLineEdit, QPushButton,
     QVBoxLayout, QHBoxLayout, QMessageBox, QScrollArea, QFrame
 )
-from PyQt6.QtGui import QPixmap
+from PyQt6.QtGui import QPixmap, QIcon
 from PyQt6.QtCore import Qt
 
 # URLs base
@@ -18,6 +20,8 @@ LOGO_URL = "https://raw.githubusercontent.com/uidnull/STARHOOK./main/starhook.pn
 # URLs de versionado
 CURRENT_VERSION_URL = "https://raw.githubusercontent.com/uidnull/STARHOOK./refs/heads/main/assets/LOADER/VERSIONS/current.py"
 UPDATE_VERSION_URL = "https://raw.githubusercontent.com/uidnull/STARHOOK./refs/heads/main/assets/LOADER/VERSIONS/update.py"
+
+ICON_URL = "https://raw.githubusercontent.com/uidnull/STARHOOK./refs/heads/main/starhook.ico"
 
 # Juegos y scripts asociados
 GAMES = [
@@ -35,28 +39,53 @@ GAMES = [
     }
 ]
 
+def get_hash_and_length(url):
+    data = urllib.request.urlopen(url).read()
+    h = hashlib.md5(data).hexdigest()
+    length = len(data)
+    return h, length
+
 def check_version():
     try:
-        current_code = urllib.request.urlopen(CURRENT_VERSION_URL).read()
-        update_code = urllib.request.urlopen(UPDATE_VERSION_URL).read()
-        if current_code != update_code:
-            # Mostrar alerta y cerrar la app
-            app = QApplication(sys.argv)
+        h_current, len_current = get_hash_and_length(CURRENT_VERSION_URL)
+        h_update, len_update = get_hash_and_length(UPDATE_VERSION_URL)
+        print(f"Current file: length={len_current}, md5={h_current}")
+        print(f"Update file:  length={len_update}, md5={h_update}")
+        if h_current != h_update:
             QMessageBox.critical(None, "Actualización requerida", "ACTUALIZA EL LOADER")
             sys.exit(0)
     except Exception as e:
-        # Si falla la verificación, también cerramos o mostramos error
-        app = QApplication(sys.argv)
         QMessageBox.critical(None, "Error", f"No se pudo verificar la versión:\n{e}")
         sys.exit(1)
 
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
+
+        # Descargar icono temporalmente y asignar
+        try:
+            data = urllib.request.urlopen(ICON_URL).read()
+            tmp_icon = tempfile.NamedTemporaryFile(delete=False, suffix=".ico")
+            tmp_icon.write(data)
+            tmp_icon.close()
+            self.setWindowIcon(QIcon(tmp_icon.name))
+            self._temp_icon_path = tmp_icon.name
+        except Exception as e:
+            print(f"Error cargando icono: {e}")
+
         self.setWindowTitle("STARHOOK LOADER")
         self.setFixedSize(500, 400)
         self.layout = QVBoxLayout(self)
         self.init_login_ui()
+
+    def closeEvent(self, event):
+        # Borra el archivo temporal del icono al cerrar
+        try:
+            if hasattr(self, '_temp_icon_path') and os.path.exists(self._temp_icon_path):
+                os.remove(self._temp_icon_path)
+        except Exception:
+            pass
+        super().closeEvent(event)
 
     def init_login_ui(self):
         self.clear_layout()
@@ -197,8 +226,8 @@ class MainWindow(QWidget):
             print(f"Error al ejecutar como admin. Código: {ret}")
 
 if __name__ == "__main__":
-    check_version()  # <-- verificamos versión antes de iniciar la app
     app = QApplication(sys.argv)
+    check_version()  # Si falla, alerta + cierre aquí
     window = MainWindow()
     window.show()
     sys.exit(app.exec())
