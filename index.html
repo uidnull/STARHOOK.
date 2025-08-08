@@ -1,22 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>STARHOOK v3</title>
-    <link rel="icon" href="https://github.com/uidnull/STARHOOK./raw/main/starhook.ico">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>STARHOOK LOADER</title>
+    <link rel="icon" href="https://github.com/uidnull/STARHOOK./raw/main/starhook.ico" />
     <style>
         :root {
             --main-bg: #0a0e17;
-            --primary: #1a73e8;
-            --secondary: #34a853;
-            --accent: #fbbc05;
-            --error: #ea4335;
+            --gradient-start: #FFC65B;
+            --gradient-end: #F87EF9;
             --text: #e8eaed;
             --card-bg: rgba(15, 25, 45, 0.8);
-            --card-border: rgba(100, 150, 255, 0.3);
+            --card-border: rgba(255, 198, 91, 0.5);
         }
-        
+
         body {
             margin: 0;
             padding: 0;
@@ -25,471 +23,96 @@
             color: var(--text);
             overflow-x: hidden;
             background-image: 
-                radial-gradient(circle at 25% 25%, rgba(26, 115, 232, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 75% 75%, rgba(52, 168, 83, 0.15) 0%, transparent 50%);
+                radial-gradient(circle at 25% 25%, rgba(255, 198, 91, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(248, 126, 249, 0.15) 0%, transparent 50%);
             position: relative;
-        }
-        
-        .grid-pattern {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: 
-                linear-gradient(rgba(100, 150, 255, 0.1) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(100, 150, 255, 0.1) 1px, transparent 1px);
-            background-size: 40px 40px;
-            z-index: 0;
-            pointer-events: none;
-        }
-        
-        .particles {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-            pointer-events: none;
-        }
-        
-        .particle {
-            position: absolute;
-            border-radius: 50%;
-            background: var(--accent);
-            opacity: 0.6;
-        }
-        
-        .container {
-            position: relative;
-            z-index: 2;
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-        
-        header {
-            text-align: center;
-            margin-bottom: 3rem;
-            position: relative;
-        }
-        
-        .logo {
-            font-size: 3.5rem;
-            font-weight: 800;
-            margin: 1rem 0;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            letter-spacing: 2px;
-            position: relative;
-            display: inline-block;
-        }
-        
-        .logo::after {
-            content: 'v3';
-            position: absolute;
-            top: -10px;
-            right: -25px;
-            font-size: 1.2rem;
-            color: var(--accent);
-            font-weight: bold;
-        }
-        
-        .subtitle {
-            color: rgba(232, 234, 237, 0.7);
-            font-size: 1.1rem;
-            margin-top: -0.5rem;
-            letter-spacing: 1px;
-        }
-        
-        .language-selector {
-            position: absolute;
-            top: 0;
-            right: 0;
+            height: 100vh;
             display: flex;
-            gap: 0.5rem;
+            justify-content: center;
+            align-items: center;
         }
-        
-        .language-flag {
-            width: 30px;
-            height: 20px;
-            cursor: pointer;
-            border: 1px solid rgba(100, 150, 255, 0.3);
-            border-radius: 3px;
-            transition: all 0.3s;
-        }
-        
-        .language-flag:hover {
-            transform: scale(1.1);
-            border-color: var(--accent);
-        }
-        
-        .card-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        
-        .card {
+
+        .loader-container {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
             border-radius: 12px;
-            padding: 1.5rem;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-        
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
-            border-color: rgba(100, 150, 255, 0.5);
-        }
-        
-        .card-title {
-            font-size: 1.8rem;
-            margin-top: 0;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .status {
-            display: inline-block;
-            padding: 0.3rem 0.8rem;
-            border-radius: 20px;
-            font-weight: bold;
-            font-size: 0.9rem;
-            margin-left: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .status.closed {
-            background-color: var(--error);
-            color: white;
-        }
-        
-        .status.undetected {
-            background-color: var(--secondary);
-            color: white;
-        }
-        
-        .btn-container {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin-top: 1.5rem;
-            flex-wrap: wrap;
-        }
-        
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0.8rem 1.8rem;
-            border-radius: 8px;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.3s;
-            border: none;
-            cursor: pointer;
-            font-size: 1rem;
-            letter-spacing: 0.5px;
-        }
-        
-        .btn-download-locked {
-            background: linear-gradient(135deg, #5c5c5c, #3a3a3a);
-            color: #b0b0b0;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            cursor: not-allowed;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .btn-download-locked::after {
-            content: "";
-            position: absolute;
-            top: -50%;
-            left: -60%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(
-                to right,
-                rgba(255, 255, 255, 0) 0%,
-                rgba(255, 255, 255, 0.1) 50%,
-                rgba(255, 255, 255, 0) 100%
-            );
-            transform: rotate(30deg);
-            animation: shine 3s infinite;
-        }
-        
-        @keyframes shine {
-            0% { left: -60%; }
-            20% { left: 100%; }
-            100% { left: 100%; }
-        }
-        
-        .btn-download-locked i {
-            filter: grayscale(100%);
-        }
-        
-        .btn-download-locked:hover {
-            transform: none;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
-        
-        .btn-download {
-            background: linear-gradient(135deg, var(--primary), #4285f4);
-            color: white;
-            box-shadow: 0 4px 15px rgba(26, 115, 232, 0.3);
-        }
-        
-        .btn-download:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(26, 115, 232, 0.4);
-        }
-        
-        .btn-discord {
-            background: linear-gradient(135deg, #5865F2, #7289da);
-            color: white;
-            box-shadow: 0 4px 15px rgba(88, 101, 242, 0.3);
-        }
-        
-        .btn-discord:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(88, 101, 242, 0.4);
-        }
-        
-        .btn i {
-            margin-right: 8px;
-            font-size: 1.2rem;
-        }
-        
-        footer {
+            padding: 2rem 3rem;
             text-align: center;
-            margin-top: 3rem;
-            font-size: 0.9rem;
-            color: rgba(232, 234, 237, 0.6);
+            box-shadow: 0 8px 32px rgba(255, 198, 91, 0.4);
+            backdrop-filter: blur(10px);
+            width: 320px;
         }
-        
-        .equation-decoration {
-            position: absolute;
-            font-size: 10rem;
-            opacity: 0.03;
-            z-index: -1;
-            font-weight: bold;
-            pointer-events: none;
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1.5rem;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
         }
-        
-        .eq-left {
-            left: -5rem;
-            top: 50%;
-            transform: translateY(-50%);
+
+        .logo::before {
+            content: "★";
+            font-size: 3.5rem;
+            color: white;
+            filter: drop-shadow(0 0 4px rgba(255, 198, 91, 0.7));
         }
-        
-        .eq-right {
-            right: -5rem;
-            top: 50%;
-            transform: translateY(-50%);
+
+        h1 {
+            margin: 0 0 1.5rem;
+            font-weight: 800;
+            font-size: 1.8rem;
+            color: white;
+            letter-spacing: 2px;
         }
-        
-        @media (max-width: 768px) {
-            .container {
-                padding: 1.5rem;
-            }
-            
-            .logo {
-                font-size: 2.5rem;
-            }
-            
-            .card-title {
-                font-size: 1.5rem;
-                flex-direction: column;
-            }
-            
-            .status {
-                margin-left: 0;
-                margin-top: 0.5rem;
-            }
-            
-            .equation-decoration {
-                font-size: 6rem;
-            }
-            
-            .eq-left {
-                left: -3rem;
-            }
-            
-            .eq-right {
-                right: -3rem;
-            }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 0.7rem 1rem;
+            font-size: 1rem;
+            border-radius: 8px;
+            border: none;
+            outline: none;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 0 10px var(--gradient-start);
+            background: #111827;
+            color: var(--text);
+        }
+
+        input::placeholder {
+            color: #bbb;
+        }
+
+        button {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 700;
+            font-size: 1rem;
+            padding: 0.7rem 1.5rem;
+            cursor: pointer;
+            transition: box-shadow 0.3s ease;
+            width: 100%;
+            letter-spacing: 1px;
+            user-select: none;
+        }
+
+        button:hover {
+            box-shadow: 0 0 15px var(--gradient-end);
         }
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <div class="grid-pattern"></div>
-    <div class="particles" id="particles"></div>
-    
-    <div class="container">
-        <header>
-            <div class="language-selector">
-                <img src="https://flagcdn.com/w20/gb.png" alt="English" class="language-flag" title="English" onclick="changeLanguage('en')">
-                <img src="https://flagcdn.com/w20/es.png" alt="Español" class="language-flag" title="Español" onclick="changeLanguage('es')">
-            </div>
-            
-            <h1 class="logo">STARHOOK</h1>
-            <p class="subtitle" id="subtitle">PREMIUM GAME TOOLS</p>
-            
-            <div class="equation-decoration eq-left">EXTERNAL</div>
-            <div class="equation-decoration eq-right">V3</div>
-        </header>
-        
-        <div class="card-grid">
-            <div class="card">
-                <h2 class="card-title">
-                    <span>VALORANT</span>
-                    <span class="status undetected" id="val-status">UD</span>
-                </h2>
-                <div class="btn-container">
-                    <a href="https://github.com/uidnull/STARHOOK./raw/main/new.rar" class="btn btn-download" id="val-download" download="STARHOOK_v3.rar">
-                        <i class="fas fa-download"></i>
-                        <span>DOWNLOAD</span>
-                    </a>
-                </div>
-            </div>
-
-            <div class="card">
-                <h2 class="card-title">
-                    <span>CS2</span>
-                    <span class="status closed" id="cs2-status">CLOSED</span>
-                </h2>
-                <div class="btn-container">
-                    <a href="#" class="btn btn-download-locked" id="cs2-download">
-                        <i class="fas fa-lock"></i>
-                        <span>LOCKED</span>
-                    </a>
-                </div>
-            </div>
-        </div>
-        
-        <div class="btn-container">
-            <a href="https://discord.gg/EVXfv8VNDP" class="btn btn-discord" id="discord-btn" target="_blank">
-                <i class="fab fa-discord"></i>
-                <span>JOIN OUR DISCORD</span>
-            </a>
-        </div>
-        
-        <footer>
-            <p id="copyright">© 2023 STARHOOK. All rights reserved.</p>
-        </footer>
+    <div class="loader-container">
+        <div class="logo"></div>
+        <h1>STARHOOK</h1>
+        <input type="text" placeholder="Ingresa tu key" />
+        <button>Login</button>
     </div>
-    
-    <script>
-        // Create particles
-        const particlesContainer = document.getElementById('particles');
-        const particleCount = 30;
-        
-        for (let i = 0; i < particleCount; i++) {
-            const particle = document.createElement('div');
-            particle.classList.add('particle');
-            
-            // Random properties
-            const size = Math.random() * 5 + 2;
-            const posX = Math.random() * 100;
-            const posY = Math.random() * 100;
-            const opacity = Math.random() * 0.4 + 0.2;
-            const animationDuration = Math.random() * 20 + 10;
-            const delay = Math.random() * 10;
-            
-            particle.style.width = `${size}px`;
-            particle.style.height = `${size}px`;
-            particle.style.left = `${posX}%`;
-            particle.style.top = `${posY}%`;
-            particle.style.opacity = opacity;
-            particle.style.animation = `float ${animationDuration}s ease-in-out ${delay}s infinite alternate`;
-            
-            particlesContainer.appendChild(particle);
-        }
-        
-        // Add floating animation
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes float {
-                0%, 100% {
-                    transform: translate(0, 0);
-                }
-                25% {
-                    transform: translate(10px, 10px);
-                }
-                50% {
-                    transform: translate(-5px, 15px);
-                }
-                75% {
-                    transform: translate(5px, -5px);
-                }
-            }
-        `;
-        document.head.appendChild(style);
-        
-        // Mouse move effect
-        document.addEventListener('mousemove', (e) => {
-            const x = e.clientX / window.innerWidth;
-            const y = e.clientY / window.innerHeight;
-            
-            document.documentElement.style.setProperty('--mouse-x', x);
-            document.documentElement.style.setProperty('--mouse-y', y);
-            
-            // Move grid pattern slightly
-            const grid = document.querySelector('.grid-pattern');
-            grid.style.backgroundPosition = `${x * 20}px ${y * 20}px`;
-        });
-        
-        // Language texts
-        const texts = {
-            en: {
-                subtitle: "PREMIUM GAME TOOLS",
-                cs2Status: "CLOSED",
-                valStatus: "UPDATED",
-                download: "DOWNLOAD",
-                discord: "JOIN OUR DISCORD",
-                copyright: "© 2023 STARHOOK. All rights reserved."
-            },
-            es: {
-                subtitle: "HERRAMIENTAS PREMIUM",
-                cs2Status: "CERRADO",
-                valStatus: "ACTUALIZADO",
-                download: "DESCARGAR",
-                discord: "ÚNETE A DISCORD",
-                copyright: "© 2023 STARHOOK. Todos los derechos reservados."
-            }
-        };
-        
-        // Change language
-        function changeLanguage(lang) {
-            document.getElementById('subtitle').textContent = texts[lang].subtitle;
-            document.getElementById('cs2-status').textContent = texts[lang].cs2Status;
-            document.getElementById('val-status').textContent = texts[lang].valStatus;
-            document.getElementById('cs2-download').querySelector('span').textContent = texts[lang].cs2Status === "CLOSED" ? "LOCKED" : texts[lang].download;
-            document.getElementById('val-download').querySelector('span').textContent = texts[lang].download;
-            document.getElementById('discord-btn').querySelector('span').textContent = texts[lang].discord;
-            document.getElementById('copyright').textContent = texts[lang].copyright;
-        }
-        
-        // Set default language to English
-        changeLanguage('en');
-        
-        // Force download with a custom filename
-        document.getElementById('val-download').addEventListener('click', function(e) {
-            // You can add additional download tracking here if needed
-            // The download will proceed automatically because of the download attribute
-        });
-    </script>
 </body>
 </html>
