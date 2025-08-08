@@ -41,7 +41,7 @@ import bettercam
 from colorama import init, Fore, Style
 from pypresence import Presence
 
-CONFIG_FILE = "val_es.json"
+CONFIG_FILE = "tf_es.json"
 DISCORD_CLIENT_ID = "1402079582257021009"
 
 KEY_MAP = {
