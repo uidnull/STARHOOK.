@@ -4,7 +4,7 @@ import json
 import time
 import threading
 import subprocess
-import tempfile
+import random
 from multiprocessing import Queue
 from ctypes import windll
 
@@ -35,11 +35,12 @@ chequear_e_instalar(paquetes_requeridos)
 import numpy as np
 import cv2
 import win32api
+import win32gui
+import win32con
 import bettercam
 from colorama import init, Fore, Style
 from pypresence import Presence
 
-# Constantes y configuraciones
 CONFIG_FILE = "estrella.json"
 DISCORD_CLIENT_ID = "1402079582257021009"
 
@@ -178,17 +179,17 @@ class StarBot(threading.Thread):
             except:
                 pass
 
+# ✅ BYPASS corregido: simula clic directamente sin AHK
 def bypass(queue, stop_event):
-    trigger_file = os.path.join(tempfile.gettempdir(), "star_8k3jz4n0.txt")
     while not stop_event.is_set():
         try:
             signal = queue.get(timeout=0.1)
             if signal == "Shoot":
-                try:
-                    with open(trigger_file, 'w') as f:
-                        f.write("shoot")
-                except:
-                    pass
+                hwnd = win32gui.GetForegroundWindow()
+                delay = random.randint(8, 10)
+                time.sleep(delay / 1000)
+                win32gui.PostMessage(hwnd, win32con.WM_LBUTTONDOWN, win32con.MK_LBUTTON, 0)
+                win32gui.PostMessage(hwnd, win32con.WM_LBUTTONUP, 0, 0)
         except:
             pass
 
@@ -253,7 +254,6 @@ def iniciar_rpc(stop_event):
         color = config.get("color", "N/A")
 
         print("\nRich Presence activo. Cierra el programa para desconectar.")
-
         start_time = int(time.time())
 
         while not stop_event.is_set():
