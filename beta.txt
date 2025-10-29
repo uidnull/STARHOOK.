@@ -1,450 +1,299 @@
--- FreeUGS GUI v2
+-- 🧩 CONFIGURACIÓN PERSISTENTE ENTRE EJECUCIONES
+local SETTINGS_FILE = "FreeUGS_Settings.json"
+local HttpService = game:GetService("HttpService")
 
--- Creado por ChatGPT
+-- Cargar configuración desde archivo o crear una nueva
+local function loadSettings()
+    if isfile and isfile(SETTINGS_FILE) then
+        local ok, data = pcall(readfile, SETTINGS_FILE)
+        if ok and data and data ~= "" then
+            local success, decoded = pcall(HttpService.JSONDecode, HttpService, data)
+            if success and type(decoded) == "table" then
+                return decoded
+            end
+        end
+    end
+    return {
+        infJumpEnabled = false,
+        espEnabled = false,
+        baseESPEnabled = false,
+        timerESPEnabled = false
+    }
+end
 
--- Uso: Solo educativo / entornos propios.
+-- Guardar configuración
+local function saveSettings(tbl)
+    if writefile then
+        local encoded = HttpService:JSONEncode(tbl)
+        writefile(SETTINGS_FILE, encoded)
+    end
+end
 
+-- Cargar o crear configuración
+getgenv().FreeUGS_Settings = loadSettings()
 
-
--- Crear GUI base
-
+-------------------------------------------------
+-- 🌀 INTERFAZ (GUI)
+-------------------------------------------------
 local gui = Instance.new("ScreenGui")
-
 gui.Name = "FreeUGSGUI"
-
 gui.ResetOnSpawn = false
-
 gui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
-
-
--- Frame principal
-
 local frame = Instance.new("Frame")
-
-frame.Size = UDim2.new(0, 200, 0, 170)
-
+frame.Size = UDim2.new(0, 200, 0, 200)
 frame.Position = UDim2.new(0, 20, 0.5, -85)
-
 frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-
 frame.BackgroundTransparency = 0.2
-
 frame.Active = true
-
 frame.Draggable = true
-
 frame.Parent = gui
 
-
-
--- Bordes redondeados
-
 local corner = Instance.new("UICorner")
-
 corner.CornerRadius = UDim.new(0, 12)
-
 corner.Parent = frame
 
-
-
--- Título
-
 local title = Instance.new("TextLabel")
-
 title.Size = UDim2.new(1, 0, 0, 30)
-
 title.BackgroundTransparency = 1
-
 title.Text = "🌀 FreeUGS GUI"
-
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
-
 title.Font = Enum.Font.GothamBold
-
 title.TextSize = 18
-
 title.Parent = frame
 
-
-
--- Función para crear botones
-
 local function createButton(text, yPos)
-
     local button = Instance.new("TextButton")
-
     button.Size = UDim2.new(0.9, 0, 0, 30)
-
     button.Position = UDim2.new(0.05, 0, 0, yPos)
-
     button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-
     button.Text = text
-
     button.TextColor3 = Color3.fromRGB(255, 255, 255)
-
     button.Font = Enum.Font.Gotham
-
     button.TextSize = 14
-
     button.Parent = frame
 
-    
-
     local bc = Instance.new("UICorner")
-
     bc.CornerRadius = UDim.new(0, 8)
-
     bc.Parent = button
 
-    
-
     return button
-
 end
-
-
 
 -- Botones
-
 local infJumpBtn = createButton("Infinite Jump", 40)
-
 local espBtn = createButton("Player ESP", 80)
-
-
-
--------------------------------------------------
-
--- 🔹 INFINITE JUMP (versión estable)
+local baseESPBtn = createButton("BASE ESP", 120)
+local timerESPBtn = createButton("Timer ESP", 160)
 
 -------------------------------------------------
-
-local infJumpEnabled = false
-
-
-
-infJumpBtn.MouseButton1Click:Connect(function()
-
-    infJumpEnabled = not infJumpEnabled
-
-    infJumpBtn.Text = infJumpEnabled and "Infinite Jump: ON" or "Infinite Jump: OFF"
-
-end)
-
-
-
+-- 🔹 INFINITE JUMP
+-------------------------------------------------
 local UserInputService = game:GetService("UserInputService")
 
+infJumpBtn.MouseButton1Click:Connect(function()
+    getgenv().FreeUGS_Settings.infJumpEnabled = not getgenv().FreeUGS_Settings.infJumpEnabled
+    infJumpBtn.Text = getgenv().FreeUGS_Settings.infJumpEnabled and "Infinite Jump: ON" or "Infinite Jump: OFF"
+    saveSettings(getgenv().FreeUGS_Settings)
+end)
 
+if getgenv().FreeUGS_Settings.infJumpEnabled then
+    infJumpBtn.Text = "Infinite Jump: ON"
+end
 
 UserInputService.JumpRequest:Connect(function()
-
-    if not infJumpEnabled then return end
-
-
+    if not getgenv().FreeUGS_Settings.infJumpEnabled then return end
 
     local player = game.Players.LocalPlayer
-
     local char = player.Character
-
     if char and char:FindFirstChild("HumanoidRootPart") and char:FindFirstChildOfClass("Humanoid") then
-
         local hrp = char.HumanoidRootPart
-
         local humanoid = char:FindFirstChildOfClass("Humanoid")
-
-
-
-        -- Aumentar el eje Y de la velocidad sin reiniciar estados
-
         hrp.Velocity = Vector3.new(hrp.Velocity.X, humanoid.JumpPower, hrp.Velocity.Z)
-
     end
-
 end)
 
-
-
 -------------------------------------------------
-
--- 🔹 PLAYER ESP con nombres
-
+-- 🔹 PLAYER ESP
 -------------------------------------------------
-
-local espEnabled = false
-
 local espFolder = Instance.new("Folder", gui)
-
 espFolder.Name = "ESP_Objects"
 
-
-
--- Crear un objeto de ESP con nombre
-
 local function createESP(player)
-
     if player == game.Players.LocalPlayer then return end
-
     if not player.Character then player.CharacterAdded:Wait() end
-
     local char = player.Character
-
     if not char:FindFirstChild("HumanoidRootPart") then return end
 
-
-
-    -- Highlight
-
     local highlight = Instance.new("Highlight")
-
     highlight.Adornee = char
-
     highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-
     highlight.FillColor = Color3.fromRGB(255, 100, 100)
-
     highlight.FillTransparency = 0.75
-
     highlight.OutlineColor = Color3.fromRGB(255, 0, 0)
-
     highlight.Parent = espFolder
 
-
-
-    -- Billboard con el nombre
-
     local billboard = Instance.new("BillboardGui")
-
     billboard.Name = "NameTag"
-
     billboard.Adornee = char:WaitForChild("Head")
-
     billboard.Size = UDim2.new(0, 100, 0, 25)
-
     billboard.StudsOffset = Vector3.new(0, 2.5, 0)
-
     billboard.AlwaysOnTop = true
-
     billboard.Parent = espFolder
 
-
-
     local nameLabel = Instance.new("TextLabel")
-
     nameLabel.Size = UDim2.new(1, 0, 1, 0)
-
     nameLabel.BackgroundTransparency = 1
-
     nameLabel.Text = player.DisplayName
-
     nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-
     nameLabel.TextStrokeTransparency = 0.5
-
     nameLabel.Font = Enum.Font.GothamBold
-
     nameLabel.TextScaled = true
-
     nameLabel.Parent = billboard
 
-
-
-    -- Si el jugador respawnea, actualizar
-
     player.CharacterAdded:Connect(function(newChar)
-
         task.wait(1)
-
         highlight.Adornee = newChar
-
         if newChar:FindFirstChild("Head") then
-
             billboard.Adornee = newChar.Head
-
         end
-
     end)
-
 end
-
-
-
--- Actualizar ESP global
 
 local function refreshESP()
-
     espFolder:ClearAllChildren()
-
-    if espEnabled then
-
+    if getgenv().FreeUGS_Settings.espEnabled then
         for _, p in ipairs(game.Players:GetPlayers()) do
-
             createESP(p)
-
         end
-
     end
-
 end
 
-
-
 espBtn.MouseButton1Click:Connect(function()
-
-    espEnabled = not espEnabled
-
-    espBtn.Text = espEnabled and "Player ESP: ON" or "Player ESP: OFF"
-
+    getgenv().FreeUGS_Settings.espEnabled = not getgenv().FreeUGS_Settings.espEnabled
+    espBtn.Text = getgenv().FreeUGS_Settings.espEnabled and "Player ESP: ON" or "Player ESP: OFF"
     refreshESP()
-
+    saveSettings(getgenv().FreeUGS_Settings)
 end)
 
-
-
--- Eventos para jugadores nuevos
+if getgenv().FreeUGS_Settings.espEnabled then
+    espBtn.Text = "Player ESP: ON"
+    refreshESP()
+end
 
 game.Players.PlayerAdded:Connect(function(p)
-
-    if espEnabled then
-
+    if getgenv().FreeUGS_Settings.espEnabled then
         task.wait(2)
-
         createESP(p)
-
     end
-
 end)
 
+-------------------------------------------------
+-- 🔹 BASE ESP
+-------------------------------------------------
+local originalTransparencies = {}
 
+local function toggleBaseESP(enable)
+    local plotsFolder = game.Workspace:FindFirstChild("Plots")
+    if not plotsFolder then return end
 
-game.Players.PlayerRemoving:Connect(function(p)
-
-    for _, v in ipairs(espFolder:GetChildren()) do
-
-        if v:IsA("Highlight") and v.Adornee and v.Adornee.Parent == p.Character then
-
-            v:Destroy()
-
-        end
-
-    end
-
-end)
-
--- BASE ESP Button
-local baseESPBtn = createButton("BASE ESP", 120)
-
-local baseESPEnabled = false
-local originalTransparencies = {} -- Guardará la transparencia original
-
-baseESPBtn.MouseButton1Click:Connect(function()
-    baseESPEnabled = not baseESPEnabled
-    baseESPBtn.Text = baseESPEnabled and "BASE ESP: ON" or "BASE ESP: OFF"
-
-    -- Función para aplicar/restaurar transparencia
-    local function toggleTransparency(folder, enable)
-        for _, obj in ipairs(folder:GetDescendants()) do
-            if obj:IsA("BasePart") then
-                if enable then
-                    -- Guardar la transparencia original si no está guardada
-                    if not originalTransparencies[obj] then
-                        originalTransparencies[obj] = obj.Transparency
-                    end
-                    obj.Transparency = 0.7
-                else
-                    -- Restaurar la transparencia original
-                    if originalTransparencies[obj] then
-                        obj.Transparency = originalTransparencies[obj]
+    for _, model in ipairs(plotsFolder:GetChildren()) do
+        if model:IsA("Model") then
+            local decorationsFolder = model:FindFirstChild("Decorations")
+            if decorationsFolder then
+                for _, obj in ipairs(decorationsFolder:GetDescendants()) do
+                    if obj:IsA("BasePart") then
+                        if enable then
+                            if not originalTransparencies[obj] then
+                                originalTransparencies[obj] = obj.Transparency
+                            end
+                            obj.Transparency = 0.7
+                        else
+                            if originalTransparencies[obj] then
+                                obj.Transparency = originalTransparencies[obj]
+                            end
+                        end
                     end
                 end
             end
         end
     end
+end
 
-    -- Recorre todos los Models dentro de Plots
-    local plotsFolder = game.Workspace:WaitForChild("Plots")
-    for _, model in ipairs(plotsFolder:GetChildren()) do
-        if model:IsA("Model") then
-            local decorationsFolder = model:FindFirstChild("Decorations")
-            if decorationsFolder then
-                toggleTransparency(decorationsFolder, baseESPEnabled)
-            end
-        end
-    end
+baseESPBtn.MouseButton1Click:Connect(function()
+    getgenv().FreeUGS_Settings.baseESPEnabled = not getgenv().FreeUGS_Settings.baseESPEnabled
+    baseESPBtn.Text = getgenv().FreeUGS_Settings.baseESPEnabled and "BASE ESP: ON" or "BASE ESP: OFF"
+    toggleBaseESP(getgenv().FreeUGS_Settings.baseESPEnabled)
+    saveSettings(getgenv().FreeUGS_Settings)
 end)
 
-local timerESPBtn = createButton("Timer ESP", 160)
-local timerESPEnabled = false
+if getgenv().FreeUGS_Settings.baseESPEnabled then
+    baseESPBtn.Text = "BASE ESP: ON"
+    toggleBaseESP(true)
+end
 
-local originalSizes = {}
-local originalTextSizes = {}
-local originalVisibility = {}
-local originalBillboardVisibility = {}
-local originalAlwaysOnTop = {}
-local originalMaxDistance = {}
+-------------------------------------------------
+-- 🔹 TIMER ESP
+-------------------------------------------------
+local originalSizes, originalTextSizes, originalVisibility, originalBillboardVisibility, originalAlwaysOnTop, originalMaxDistance = {}, {}, {}, {}, {}, {}
 
 local function ajustarTimerESP(enable)
-    local plotsFolder = workspace:WaitForChild("Plots")
+    local plotsFolder = workspace:FindFirstChild("Plots")
+    if not plotsFolder then return end
 
     for _, plot in ipairs(plotsFolder:GetChildren()) do
-        if plot:IsA("Folder") or plot:IsA("Model") then
-            local purchases = plot:FindFirstChild("Purchases")
-            if purchases then
-                local plotBlock = purchases:FindFirstChild("PlotBlock")
-                if plotBlock then
-                    local main = plotBlock:FindFirstChild("Main")
-                    if main then
-                        local billboardGui = main:FindFirstChild("BillboardGui")
-                        if billboardGui then
-                            if enable then
-                                -- Guardar originales si no están guardados
-                                if not originalSizes[billboardGui] then
-                                    originalSizes[billboardGui] = billboardGui.Size
-                                    originalAlwaysOnTop[billboardGui] = billboardGui.AlwaysOnTop
-                                    originalMaxDistance[billboardGui] = billboardGui.MaxDistance
-                                    originalBillboardVisibility[billboardGui] = billboardGui.Enabled or true
-                                end
-                                billboardGui.AlwaysOnTop = true
-                                billboardGui.MaxDistance = math.huge
-                                billboardGui.Size = UDim2.new(0, 300, 0, 150)
-                                billboardGui.Enabled = true
-                            else
-                                -- Restaurar originales
-                                if originalSizes[billboardGui] then
-                                    billboardGui.Size = originalSizes[billboardGui]
-                                    billboardGui.AlwaysOnTop = originalAlwaysOnTop[billboardGui]
-                                    billboardGui.MaxDistance = originalMaxDistance[billboardGui]
-                                    billboardGui.Enabled = originalBillboardVisibility[billboardGui]
-                                else
-                                    -- En caso de no tener originales, ocultar
-                                    billboardGui.Enabled = false
-                                end
+        local purchases = plot:FindFirstChild("Purchases")
+        if purchases then
+            local plotBlock = purchases:FindFirstChild("PlotBlock")
+            if plotBlock then
+                local main = plotBlock:FindFirstChild("Main")
+                if main then
+                    local billboardGui = main:FindFirstChild("BillboardGui")
+                    if billboardGui then
+                        if enable then
+                            if not originalSizes[billboardGui] then
+                                originalSizes[billboardGui] = billboardGui.Size
+                                originalAlwaysOnTop[billboardGui] = billboardGui.AlwaysOnTop
+                                originalMaxDistance[billboardGui] = billboardGui.MaxDistance
+                                originalBillboardVisibility[billboardGui] = billboardGui.Enabled or true
                             end
+                            billboardGui.AlwaysOnTop = true
+                            billboardGui.MaxDistance = math.huge
+                            billboardGui.Size = UDim2.new(0, 300, 0, 150)
+                            billboardGui.Enabled = true
+                        else
+                            if originalSizes[billboardGui] then
+                                billboardGui.Size = originalSizes[billboardGui]
+                                billboardGui.AlwaysOnTop = originalAlwaysOnTop[billboardGui]
+                                billboardGui.MaxDistance = originalMaxDistance[billboardGui]
+                                billboardGui.Enabled = originalBillboardVisibility[billboardGui]
+                            else
+                                billboardGui.Enabled = false
+                            end
+                        end
 
-                            local elementosNombres = {"Delay", "LockStudio", "Locked", "RemainingTime"}
-                            for _, nombre in ipairs(elementosNombres) do
-                                local texto = billboardGui:FindFirstChild(nombre)
-                                if texto and texto:IsA("TextLabel") then
-                                    if enable then
-                                        if not originalTextSizes[texto] then
-                                            originalTextSizes[texto] = texto.TextSize
-                                        end
-                                        if originalVisibility[texto] == nil then
-                                            originalVisibility[texto] = texto.Visible
-                                        end
-                                        texto.Visible = true
-                                        texto.TextSize = 48
-                                        texto.TextWrapped = true
+                        local elementosNombres = {"Delay", "LockStudio", "Locked", "RemainingTime"}
+                        for _, nombre in ipairs(elementosNombres) do
+                            local texto = billboardGui:FindFirstChild(nombre)
+                            if texto and texto:IsA("TextLabel") then
+                                if enable then
+                                    if not originalTextSizes[texto] then
+                                        originalTextSizes[texto] = texto.TextSize
+                                    end
+                                    if originalVisibility[texto] == nil then
+                                        originalVisibility[texto] = texto.Visible
+                                    end
+                                    texto.Visible = true
+                                    texto.TextSize = 48
+                                    texto.TextWrapped = true
+                                else
+                                    if originalTextSizes[texto] then
+                                        texto.TextSize = originalTextSizes[texto]
+                                    end
+                                    if originalVisibility[texto] ~= nil then
+                                        texto.Visible = originalVisibility[texto]
                                     else
-                                        if originalTextSizes[texto] then
-                                            texto.TextSize = originalTextSizes[texto]
-                                        end
-                                        if originalVisibility[texto] ~= nil then
-                                            texto.Visible = originalVisibility[texto]
-                                        else
-                                            texto.Visible = false
-                                        end
+                                        texto.Visible = false
                                     end
                                 end
                             end
@@ -457,7 +306,13 @@ local function ajustarTimerESP(enable)
 end
 
 timerESPBtn.MouseButton1Click:Connect(function()
-    timerESPEnabled = not timerESPEnabled
-    timerESPBtn.Text = timerESPEnabled and "Timer ESP: ON" or "Timer ESP: OFF"
-    ajustarTimerESP(timerESPEnabled)
+    getgenv().FreeUGS_Settings.timerESPEnabled = not getgenv().FreeUGS_Settings.timerESPEnabled
+    timerESPBtn.Text = getgenv().FreeUGS_Settings.timerESPEnabled and "Timer ESP: ON" or "Timer ESP: OFF"
+    ajustarTimerESP(getgenv().FreeUGS_Settings.timerESPEnabled)
+    saveSettings(getgenv().FreeUGS_Settings)
 end)
+
+if getgenv().FreeUGS_Settings.timerESPEnabled then
+    timerESPBtn.Text = "Timer ESP: ON"
+    ajustarTimerESP(true)
+end
