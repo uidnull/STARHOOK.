@@ -41,7 +41,7 @@ gui.ResetOnSpawn = false
 gui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 200, 0, 200)
+frame.Size = UDim2.new(0, 200, 0, 240)
 frame.Position = UDim2.new(0, 20, 0.5, -85)
 frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 frame.BackgroundTransparency = 0.2
