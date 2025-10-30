@@ -316,3 +316,57 @@ if getgenv().FreeUGS_Settings.timerESPEnabled then
     timerESPBtn.Text = "Timer ESP: ON"
     ajustarTimerESP(true)
 end
+
+
+-------------------------------------------------
+-- 🔹 ANTI-RAGDOLL
+-------------------------------------------------
+-- Crear botón
+local antiRagdollBtn = createButton("Anti-Ragdoll", 200)
+
+-- Función para activar/desactivar anti-ragdoll
+local function toggleAntiRagdoll(enable)
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoid = character:WaitForChild("Humanoid")
+    local rootPart = character:WaitForChild("HumanoidRootPart")
+
+    -- Desconectar conexiones previas si existen
+    if getgenv().AntiRagdollConnections then
+        for _, conn in ipairs(getgenv().AntiRagdollConnections) do
+            conn:Disconnect()
+        end
+    end
+    getgenv().AntiRagdollConnections = {}
+
+    if enable then
+        -- Evitar estado Physics (ragdoll)
+        table.insert(getgenv().AntiRagdollConnections, humanoid.StateChanged:Connect(function(_, newState)
+            if newState == Enum.HumanoidStateType.Physics then
+                humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+            end
+        end))
+
+        -- Mantener posición estable
+        table.insert(getgenv().AntiRagdollConnections, game:GetService("RunService").RenderStepped:Connect(function()
+            if humanoid:GetState() == Enum.HumanoidStateType.Physics then
+                rootPart.Velocity = Vector3.zero
+                rootPart.RotVelocity = Vector3.zero
+            end
+        end))
+    end
+end
+
+-- Toggle desde el botón
+antiRagdollBtn.MouseButton1Click:Connect(function()
+    getgenv().FreeUGS_Settings.antiRagdollEnabled = not getgenv().FreeUGS_Settings.antiRagdollEnabled
+    antiRagdollBtn.Text = getgenv().FreeUGS_Settings.antiRagdollEnabled and "Anti-Ragdoll: ON" or "Anti-Ragdoll: OFF"
+    toggleAntiRagdoll(getgenv().FreeUGS_Settings.antiRagdollEnabled)
+    saveSettings(getgenv().FreeUGS_Settings)
+end)
+
+-- Activar al iniciar si estaba guardado
+if getgenv().FreeUGS_Settings.antiRagdollEnabled then
+    antiRagdollBtn.Text = "Anti-Ragdoll: ON"
+    toggleAntiRagdoll(true)
+end
