@@ -370,3 +370,74 @@ if getgenv().FreeUGS_Settings.antiRagdollEnabled then
     antiRagdollBtn.Text = "Anti-Ragdoll: ON"
     toggleAntiRagdoll(true)
 end
+
+-------------------------------------------------
+-- 🌀 SCRIPT SERVERHOP
+-------------------------------------------------
+local TeleportService = game:GetService("TeleportService")
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+
+local PLACE_ID = 109983668079237
+local player = Players.LocalPlayer
+
+-- Crear GUI separado
+local playerGui = player:WaitForChild("PlayerGui")
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "ServerHopGUI"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = playerGui
+
+local button = Instance.new("TextButton")
+button.Size = UDim2.new(0,160,0,40)
+button.Position = UDim2.new(0.5,-80,0.05,0)
+button.AnchorPoint = Vector2.new(0.5,0)
+button.Text = "SERVERHOP"
+button.Font = Enum.Font.GothamBold
+button.TextSize = 18
+button.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+button.BackgroundTransparency = 0.5
+button.TextColor3 = Color3.new(1,1,1)
+button.AutoButtonColor = false
+button.Parent = screenGui
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 10)
+corner.Parent = button
+
+button.MouseEnter:Connect(function()
+    button.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+end)
+button.MouseLeave:Connect(function()
+    button.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+end)
+
+button.MouseButton1Down:Connect(function()
+    button:TweenSize(UDim2.new(0,150,0,36), "Out", "Quad", 0.05, true)
+end)
+button.MouseButton1Up:Connect(function()
+    button:TweenSize(UDim2.new(0,160,0,40), "Out", "Quad", 0.05, true)
+end)
+
+button.MouseButton1Click:Connect(function()
+    button.Text = "CONECTANDO..."
+    button.Active = false
+    local success, err = pcall(function()
+        TeleportService:Teleport(PLACE_ID, player)
+    end)
+    if not success then
+        warn("Error al teletransportar: " .. tostring(err))
+        button.Text = "ERROR"
+        wait(2)
+        button.Text = "SERVERHOP"
+        button.Active = true
+    end
+end)
+
+UserInputService.InputBegan:Connect(function(input, processed)
+    if processed then return end
+    if input.KeyCode == Enum.KeyCode.L then
+        player:Kick("Has salido del juego manualmente.")
+    end
+end)
