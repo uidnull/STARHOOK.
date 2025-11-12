@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lista de Brainrots</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #121212;
+        color: #f1f1f1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 0;
+        padding: 20px;
+    }
+    h1 {
+        color: #00ffcc;
+    }
+    form {
+        background: #1e1e1e;
+        padding: 20px;
+        border-radius: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+        max-width: 600px;
+    }
+    input, select, button {
+        padding: 10px;
+        border-radius: 5px;
+        border: none;
+        font-size: 1em;
+    }
+    input {
+        width: 200px;
+    }
+    button {
+        background: #00ffcc;
+        color: #000;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    button:hover {
+        background: #00cca3;
+    }
+    #filtros {
+        margin-top: 20px;
+        display: flex;
+        gap: 10px;
+    }
+    #lista {
+        margin-top: 30px;
+        width: 100%;
+        max-width: 700px;
+    }
+    .item {
+        background: #1e1e1e;
+        margin-bottom: 10px;
+        padding: 10px 15px;
+        border-radius: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .info {
+        display: flex;
+        flex-direction: column;
+    }
+    .dinero {
+        color: #00ffcc;
+        font-weight: bold;
+    }
+</style>
+</head>
+<body>
+<h1>Lista de Brainrots</h1>
+
+<form id="form">
+    <input type="text" id="brainrot" placeholder="Brainrot" required>
+    <input type="text" id="estilo" placeholder="Estilo (opcional)">
+    <input type="text" id="dinero" placeholder="Dinero (ej: 12 K/s, 122 M/s)" required>
+    <input type="text" id="mutaciones" placeholder="Mutaciones (opcional)">
+    <button type="submit">Añadir</button>
+</form>
+
+<div id="filtros">
+    <button id="ordenarAZ">Ordenar A-Z</button>
+    <button id="mayorDinero">Mayor dinero</button>
+    <button id="menorDinero">Menor dinero</button>
+</div>
+
+<div id="lista"></div>
+
+<script>
+    const form = document.getElementById('form');
+    const lista = document.getElementById('lista');
+    let items = JSON.parse(localStorage.getItem('brainrots')) || [];
+
+    function guardar() {
+        localStorage.setItem('brainrots', JSON.stringify(items));
+    }
+
+    function parseDinero(valor) {
+        // Convierte "12 K/s" o "122 M/s" en número para ordenar
+        let num = parseFloat(valor);
+        if (valor.toLowerCase().includes('m')) num *= 1_000_000;
+        else if (valor.toLowerCase().includes('k')) num *= 1_000;
+        return num || 0;
+    }
+
+    function mostrar() {
+        lista.innerHTML = '';
+        items.forEach(i => {
+            const div = document.createElement('div');
+            div.className = 'item';
+            div.innerHTML = `
+                <div class="info">
+                    <strong>${i.brainrot}</strong>
+                    <span>Estilo: ${i.estilo}</span>
+                    <span>Mutaciones: ${i.mutaciones}</span>
+                </div>
+                <div class="dinero">${i.dinero}</div>
+            `;
+            lista.appendChild(div);
+        });
+    }
+
+    form.addEventListener('submit', e => {
+        e.preventDefault();
+        const brainrot = document.getElementById('brainrot').value.trim();
+        const estilo = document.getElementById('estilo').value.trim() || 'normal';
+        const dinero = document.getElementById('dinero').value.trim();
+        const mutaciones = document.getElementById('mutaciones').value.trim() || '0';
+
+        if (!brainrot || !dinero) return;
+
+        items.push({ brainrot, estilo, dinero, mutaciones });
+        items.sort((a, b) => a.brainrot.localeCompare(b.brainrot));
+        guardar();
+        mostrar();
+        form.reset();
+    });
+
+    document.getElementById('ordenarAZ').addEventListener('click', () => {
+        items.sort((a, b) => a.brainrot.localeCompare(b.brainrot));
+        guardar();
+        mostrar();
+    });
+
+    document.getElementById('mayorDinero').addEventListener('click', () => {
+        items.sort((a, b) => parseDinero(b.dinero) - parseDinero(a.dinero));
+        mostrar();
+    });
+
+    document.getElementById('menorDinero').addEventListener('click', () => {
+        items.sort((a, b) => parseDinero(a.dinero) - parseDinero(b.dinero));
+        mostrar();
+    });
+
+    mostrar();
+</script>
+</body>
+</html>
