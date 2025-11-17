@@ -59,10 +59,63 @@ footer.Text = ".gg/B9PR2EZHAK"
 footer.Parent = mainFrame
 
 --====================================================--
+--              BOTÓN DE CIERRE (X)
+--====================================================--
+
+local closeButton = Instance.new("TextButton")
+closeButton.Name = "CloseButton"
+closeButton.Size = UDim2.new(0, 25, 0, 25)
+closeButton.Text = "X"
+closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeButton.Font = Enum.Font.GothamBold
+closeButton.TextSize = 18
+closeButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+closeButton.Parent = screenGui  -- Fuera del mainFrame
+
+local closeCorner = Instance.new("UICorner")
+closeCorner.CornerRadius = UDim.new(0.3, 0)
+closeCorner.Parent = closeButton
+
+-- Posición inicial (separado 4px a la derecha)
+closeButton.Position = UDim2.new(
+	0,
+	mainFrame.AbsolutePosition.X + mainFrame.AbsoluteSize.X + 8,
+	0,
+	mainFrame.AbsolutePosition.Y
+)
+
+-- Seguir al mainFrame cuando se mueve
+mainFrame:GetPropertyChangedSignal("AbsolutePosition"):Connect(function()
+	closeButton.Position = UDim2.new(
+		0,
+		mainFrame.AbsolutePosition.X + mainFrame.AbsoluteSize.X + 8,
+		0,
+		mainFrame.AbsolutePosition.Y
+	)
+end)
+
+--====================================================--
+--           TABLA PARA CONEXIONES
+--====================================================--
+
+local connections = {}
+
+local function addConnection(conn)
+	table.insert(connections, conn)
+end
+
+local function disconnectAll()
+	for _, conn in ipairs(connections) do
+		if typeof(conn) == "RBXScriptConnection" then
+			conn:Disconnect()
+		end
+	end
+end
+
+--====================================================--
 --              LÓGICA DE ANIMACIONES
 --====================================================--
 
--- Estado persistente
 local unwalkEnabled = false
 
 local function getHumanoid()
@@ -81,12 +134,13 @@ local function disableAnimations(humanoid, character)
 		animator:Destroy()
 	end
 
-	-- Evitar regeneración
-	humanoid.ChildAdded:Connect(function(child)
-		if unwalkEnabled and child:IsA("Animator") then
-			child:Destroy()
-		end
-	end)
+	addConnection(
+		humanoid.ChildAdded:Connect(function(child)
+			if unwalkEnabled and child:IsA("Animator") then
+				child:Destroy()
+			end
+		end)
+	)
 end
 
 local function enableAnimations(humanoid, character)
@@ -115,16 +169,44 @@ local function applyState()
 	end
 end
 
-toggleButton.MouseButton1Click:Connect(function()
-	unwalkEnabled = not unwalkEnabled
-	applyState()
-end)
+addConnection(
+	toggleButton.MouseButton1Click:Connect(function()
+		unwalkEnabled = not unwalkEnabled
+		applyState()
+	end)
+)
+
+addConnection(
+	player.CharacterAdded:Connect(function()
+		task.wait(0.3)
+		applyState()
+	end)
+)
 
 --====================================================--
---      MANTENER ESTADO AL REAPARECER EL PERSONAJE
+--           CIERRE: RESTAURAR Y ELIMINAR TODO
 --====================================================--
 
-player.CharacterAdded:Connect(function()
-	task.wait(0.3) -- esperar a que cargue el personaje
-	applyState()
-end)
+addConnection(
+	closeButton.MouseButton1Click:Connect(function()
+
+		local humanoid, character = getHumanoid()
+
+		local animateScript = character:FindFirstChild("Animate")
+		if animateScript then
+			animateScript.Disabled = false
+		end
+
+		if not humanoid:FindFirstChildOfClass("Animator") then
+			local newAnimator = Instance.new("Animator")
+			newAnimator.Parent = humanoid
+		end
+
+		unwalkEnabled = false
+		disconnectAll()
+
+		screenGui:Destroy()
+		closeButton:Destroy()
+		script:Destroy()
+	end)
+)
