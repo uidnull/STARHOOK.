@@ -49,7 +49,7 @@ buttonCorner.Parent = toggleButton
 
 local footer = Instance.new("TextLabel")
 footer.Name = "Footer"
-footer.Size = UDim2.new(1, -10, 0, 25)
+footer.Size = UDim2.new(1, -10, 0, 15)
 footer.Position = UDim2.new(0, 5, 1, -30)
 footer.BackgroundTransparency = 1
 footer.TextColor3 = Color3.fromRGB(255, 255, 255)
