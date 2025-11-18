@@ -160,11 +160,11 @@ local function applyState()
 
 	if unwalkEnabled then
 		disableAnimations(humanoid, character)
-		toggleButton.Text = "UnWalk (ON)"
+		toggleButton.Text = "NoWalk (ON)"
 		toggleButton.BackgroundColor3 = Color3.fromRGB(150, 50, 50)
 	else
 		enableAnimations(humanoid, character)
-		toggleButton.Text = "UnWalk (OFF)"
+		toggleButton.Text = "NoWalk (OFF)"
 		toggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 	end
 end
